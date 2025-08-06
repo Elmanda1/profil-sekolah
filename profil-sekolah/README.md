@@ -6,8 +6,8 @@ structure
 1 homepage isinya
     hero
     highlight prestasi
-    prestasi
     ekskul
+    prestasi
     berita
     contact
 2 profil
