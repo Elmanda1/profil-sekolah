@@ -1,4 +1,6 @@
-Belum Setup Database
+table belum semua
+
+
 
 structure
 1 homepage isinya
