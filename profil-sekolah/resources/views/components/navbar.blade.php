@@ -1,4 +1,4 @@
-<div class='fixed h-17 w-full bg-[#fffffb] flex items-center justify-center px-6 shadow-xl z-100'>
+<div class='fixed h-17 w-full bg-gray-200 flex items-center justify-center px-6 shadow-xl z-100'>
     <!-- Nav Menu -->
     <ul class='flex gap-12 justify-center items-center'>
         <a href='/' class='flex gap-2 text-lg cursor-pointer text-amber-950'><span>L</span>Beranda</a>
@@ -9,8 +9,8 @@
                 <a href="/profil-siswa" class="block px-4 py-2 hover:bg-gray-100">Profil Siswa</a>
             </div>
         </div>
-        <a href='#' class='flex gap-2 text-lg cursor-pointer text-amber-950'><span>L</span>Berita</a>
-        <a href='#' class='flex gap-2 text-lg cursor-pointer text-amber-950'><span>L</span>Prestasi</a>
+        <a href='/berita' class='flex gap-2 text-lg cursor-pointer text-amber-950'><span>L</span>Berita</a>
+        <a href='/prestasi' class='flex gap-2 text-lg cursor-pointer text-amber-950'><span>L</span>Prestasi</a>
     </ul>
 </div>
 <script>

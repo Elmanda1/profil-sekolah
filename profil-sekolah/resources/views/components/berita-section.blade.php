@@ -6,7 +6,7 @@
         <div class='flex w-1/12 justify-center items-center'>
             <button class='text-[5rem]'><</button>
         </div>
-        <div class='flex bg-green-300 h-full w-full justify-start items-center gap-4 overflow-x-scroll'>
+        <div class='flex h-full w-full justify-start items-center gap-4 overflow-x-scroll'>
             <x-berita-card/>
             <x-berita-card/>
                         <x-berita-card/>
@@ -18,7 +18,7 @@
             <button class='text-[5rem]'>></button>
         </div>
     </div>
-    <div>
-        <button class='bg-green-100 px-4 py-2 text-lg rounded-full border-2 border-green-600'>Lihat Lebih Banyak</button>
+    <div class='hover:-translate-y-2 transition-all duration-300 hover:shadow-xl'>
+        <a href='/berita'class=' bg-green-50 px-4 py-2 text-lg rounded-full border-2 text-green-600 border-green-600 font-semibold'>Lihat Lebih Banyak</a>
     </div>
 </div>

@@ -1,4 +1,4 @@
-<div class='h-56 w-132 bg-gray-200 rounded-lg flex justify-start items-center px-7 hover:scale-102 hover:shadow-xl transition-all duration-300'>
+<div class='h-56 w-132 bg-[#fffffb] rounded-lg flex justify-start items-center px-7 hover:-translate-y-2 hover:shadow-xl transition-all duration-300'>
     <div class='w-1/3 h-full  flex justify-center items-center'>
         <div class='h-40 w-40 bg-purple-300 flex justify-center items-center'>nanti diganti foto</div>
     </div>    

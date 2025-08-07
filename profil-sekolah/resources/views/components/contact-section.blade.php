@@ -1,5 +1,5 @@
-<div class='flex flex-col h-[70vh] bg-green-100 w-full justify-center items-center border-t-10 border-b-10 border-green-600'>
-    <div class='w-[60vw] h-[60vh] bg-gray-200 rounded-lg flex'>
+<div class='flex flex-col h-[70vh] w-full justify-center items-center border-t-10 border-green-600'>
+    <div class='w-[60vw] h-[60vh] bg-[#fffffb] rounded-lg flex'>
         <div class='w-full flex flex-col justify-start items-center p-10 gap-8'>
             <h1 class='text-2xl font-semibold'>Contact Us</h1>
             <div class='h-full w-full  flex flex-col gap-8'>
@@ -10,7 +10,7 @@
                 <textarea class='bg-green-800 w-full h-full' placeholder='Pesan anda..'></textarea>
             </div>
             <div>
-                <button class='bg-green-100 px-4 py-2 text-lg rounded-full border-2 border-green-600'>Lihat Lebih Banyak</button>
+                <button class='hover:-translate-y-2 transition-all duration-300 hover:shadow-xl cursor-pointer bg-green-50 font-semibold px-8 py-2 text-lg rounded-full border-2 text-green-600 border-green-600'>Kirim</button>
             </div>
         </div>
         <div class='w-full flex flex-col justify-start items-center p-10 gap-4'>

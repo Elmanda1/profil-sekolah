@@ -6,10 +6,11 @@
     <title>@yield('title', 'Laravel')</title>
     @vite('resources/css/app.css')
   </head>
-  <body class="bg-[#fffffb]">
+  <body class="bg-gray-200">
     <x-navbar />
     
     {{-- Section konten halaman --}}
     @yield('content')
   </body>
+   <x-footer/>
 </html>
