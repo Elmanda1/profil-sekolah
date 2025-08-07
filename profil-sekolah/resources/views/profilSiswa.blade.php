@@ -1,6 +1,6 @@
 @extends('layout.app')
 
-@section('title', 'Beranda')
+@section('title', 'profil-siswa')
 
 @section('content')
   <x-hero />
