@@ -3,21 +3,25 @@
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('home');
+    return view('frontend.home');
 });
 
 Route::get('/profil-pengajar', function () {
-    return view('profilPengajar');
+    return view('frontend.profilPengajar');
 });
 
 Route::get('/profil-siswa', function () {
-    return view('profilSiswa');
+    return view('frontend.profilSiswa');
 });
 
 Route::get('/berita', function () {
-    return view('berita');
+    return view('frontend.berita');
 });
 
 Route::get('/prestasi', function () {
-    return view('prestasi');
+    return view('frontend.prestasi');
 });
+
+Route::get('/admin/dashboard', function () {
+    return view('admin.dashboard');
+})->name('admin.dashboard');
