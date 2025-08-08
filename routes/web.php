@@ -22,6 +22,7 @@ Route::get('/prestasi', function () {
     return view('frontend.prestasi');
 });
 
-Route::get('/admin/dashboard', function () {
-    return view('admin.dashboard');
-})->name('admin.dashboard');
+Route::get('/admin', function () {
+    return view('admin.dashboard', ['title' => 'Dashboard']);
+});
+
