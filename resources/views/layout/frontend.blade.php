@@ -11,6 +11,7 @@
     
     {{-- Section konten halaman --}}
     @yield('content')
+    @stack('scripts')
   </body>
    <x-footer/>
 </html>
