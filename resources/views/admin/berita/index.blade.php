@@ -11,7 +11,7 @@
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
                     <li class="breadcrumb-item active">Data Berita</li>
                 </ol>
             </div>
@@ -27,7 +27,7 @@
                     <div class="card-header">
                         <h3 class="card-title">Daftar Berita</h3>
                         <div class="card-tools">
-                            <a href="{{ route('berita.create') }}" class="btn btn-primary btn-sm">
+                            <a href="{{ route('admin.berita.create') }}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-plus"></i> Tambah Berita
                             </a>
                         </div>
@@ -60,13 +60,13 @@
                                             <td>{{ $item->penulis ?? '-' }}</td>
                                             <td>
                                                 <div class="btn-group">
-                                                    <a href="{{ route('berita.show', $item->id_berita) }}" class="btn btn-info btn-sm">
+                                                    <a href="{{ route('admin.berita.show', $item->id_berita) }}" class="btn btn-info btn-sm">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
-                                                    <a href="{{ route('berita.edit', $item->id_berita) }}" class="btn btn-warning btn-sm">
+                                                    <a href="{{ route('admin.berita.edit', $item->id_berita) }}" class="btn btn-warning btn-sm">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
-                                                    <form action="{{ route('berita.destroy', $item->id_berita) }}" method="POST" style="display: inline;">
+                                                    <form action="{{ route('admin.berita.destroy', $item->id_berita) }}" method="POST" style="display: inline;">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Yakin ingin menghapus?')">

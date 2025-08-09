@@ -11,7 +11,7 @@
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
                     <li class="breadcrumb-item active">Data Prestasi</li>
                 </ol>
             </div>
@@ -27,7 +27,7 @@
                     <div class="card-header">
                         <h3 class="card-title">Daftar Prestasi</h3>
                         <div class="card-tools">
-                            <a href="{{ route('prestasi.create') }}" class="btn btn-primary btn-sm">
+                            <a href="{{ route('admin.prestasi.create') }}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-plus"></i> Tambah Prestasi
                             </a>
                         </div>
@@ -60,13 +60,13 @@
                                             <td>{{ $item->tahun ?? '-' }}</td>
                                             <td>
                                                 <div class="btn-group">
-                                                    <a href="{{ route('prestasi.show', $item->id_prestasi) }}" class="btn btn-info btn-sm">
+                                                    <a href="{{ route('admin.prestasi.show', $item->id_prestasi) }}" class="btn btn-info btn-sm">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
-                                                    <a href="{{ route('prestasi.edit', $item->id_prestasi) }}" class="btn btn-warning btn-sm">
+                                                    <a href="{{ route('admin.prestasi.edit', $item->id_prestasi) }}" class="btn btn-warning btn-sm">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
-                                                    <form action="{{ route('prestasi.destroy', $item->id_prestasi) }}" method="POST" style="display: inline;">
+                                                    <form action="{{ route('admin.prestasi.destroy', $item->id_prestasi) }}" method="POST" style="display: inline;">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Yakin ingin menghapus?')">

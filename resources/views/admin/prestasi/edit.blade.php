@@ -11,8 +11,8 @@
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('prestasi.index') }}">Data Prestasi</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.prestasi.index') }}">Data Prestasi</a></li>
                     <li class="breadcrumb-item active">Edit Prestasi</li>
                 </ol>
             </div>
@@ -28,7 +28,7 @@
                     <div class="card-header">
                         <h3 class="card-title">Form Edit Prestasi</h3>
                     </div>
-                    <form action="{{ route('prestasi.update', $prestasi->id_prestasi) }}" method="POST">
+                    <form action="{{ route('admin.prestasi.update', $prestasi->id_prestasi) }}" method="POST">
                         @csrf
                         @method('PUT')
                         <div class="card-body">
@@ -75,7 +75,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save"></i> Update
                             </button>
-                            <a href="{{ route('prestasi.index') }}" class="btn btn-secondary">
+                            <a href="{{ route('admin.prestasi.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Kembali
                             </a>
                         </div>

@@ -32,7 +32,26 @@ Route::prefix('admin')->name('admin.')->group(function () {
     
 // Dashboard
 Route::get('/', function () {
-    return view('admin.dashboard');
+    // Hitung total data untuk dashboard
+    $totalSiswa = \App\Models\Siswa::count();
+    $totalGuru = \App\Models\Guru::count();
+    $totalBerita = \App\Models\Berita::count();
+    $totalPrestasi = \App\Models\Prestasi::count();
+    
+    // Ambil data terbaru berdasarkan ID (bukan created_at)
+    $siswaRecent = \App\Models\Siswa::orderBy('id_siswa', 'desc')->take(5)->get();
+    $beritaRecent = \App\Models\Berita::orderBy('id_berita', 'desc')->take(5)->get();
+    $prestasiRecent = \App\Models\Prestasi::orderBy('id_prestasi', 'desc')->take(5)->get();
+    
+    return view('admin.dashboard', compact(
+        'totalSiswa',
+        'totalGuru', 
+        'totalBerita',
+        'totalPrestasi',
+        'siswaRecent',
+        'beritaRecent',
+        'prestasiRecent'
+    ));
 })->name('dashboard');
 
 // Routes Siswa

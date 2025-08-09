@@ -14,7 +14,7 @@ class PrestasiController extends Controller
      */
     public function index()
     {
-        $prestasi = Prestasi::with('siswa')->latest()->paginate(10);
+        $prestasi = Prestasi::with('siswa')->orderBy('id_prestasi', 'desc')->paginate(10);
         return view('admin.prestasi.index', compact('prestasi'));
     }
 
@@ -46,7 +46,7 @@ class PrestasiController extends Controller
 
         Prestasi::create($request->all());
 
-        return redirect()->route('prestasi.index')
+        return redirect()->route('admin.prestasi.index')
             ->with('success', 'Prestasi berhasil ditambahkan');
     }
 
@@ -89,7 +89,7 @@ class PrestasiController extends Controller
         $prestasi = Prestasi::findOrFail($id);
         $prestasi->update($request->all());
 
-        return redirect()->route('prestasi.index')
+        return redirect()->route('admin.prestasi.index')
             ->with('success', 'Prestasi berhasil diupdate');
     }
 
@@ -101,7 +101,7 @@ class PrestasiController extends Controller
         $prestasi = Prestasi::findOrFail($id);
         $prestasi->delete();
 
-        return redirect()->route('prestasi.index')
+        return redirect()->route('admin.prestasi.index')
             ->with('success', 'Prestasi berhasil dihapus');
     }
 
@@ -110,7 +110,7 @@ class PrestasiController extends Controller
      */
     public function frontend()
     {
-        $prestasi = Prestasi::with('siswa')->latest()->paginate(9);
+        $prestasi = Prestasi::with('siswa')->orderBy('id_prestasi', 'desc')->paginate(9);
         return view('frontend.prestasi', compact('prestasi'));
     }
 
@@ -119,7 +119,7 @@ class PrestasiController extends Controller
      */
     public function byYear($year)
     {
-        $prestasi = Prestasi::with('siswa')->byYear($year)->latest()->paginate(9);
+        $prestasi = Prestasi::with('siswa')->where('tahun', $year)->orderBy('id_prestasi', 'desc')->paginate(9);
         return view('frontend.prestasi', compact('prestasi'));
     }
 }

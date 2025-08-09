@@ -11,8 +11,8 @@
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('berita.index') }}">Data Berita</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.berita.index') }}">Data Berita</a></li>
                     <li class="breadcrumb-item active">Tambah Berita</li>
                 </ol>
             </div>
@@ -28,7 +28,7 @@
                     <div class="card-header">
                         <h3 class="card-title">Form Tambah Berita</h3>
                     </div>
-                    <form action="{{ route('berita.store') }}" method="POST">
+                    <form action="{{ route('admin.berita.store') }}" method="POST">
                         @csrf
                         <div class="card-body">
                             <div class="form-group">
@@ -77,7 +77,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save"></i> Simpan
                             </button>
-                            <a href="{{ route('berita.index') }}" class="btn btn-secondary">
+                            <a href="{{ route('admin.berita.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Kembali
                             </a>
                         </div>

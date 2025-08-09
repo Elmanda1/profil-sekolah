@@ -1,4 +1,4 @@
-@extends('layout.frontend')
+@extends('layouts.frontend')
 
 @section('title', 'profil-siswa')
 

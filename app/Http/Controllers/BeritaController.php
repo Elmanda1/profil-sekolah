@@ -13,7 +13,7 @@ class BeritaController extends Controller
      */
     public function index()
     {
-        $berita = Berita::latest()->paginate(10);
+        $berita = Berita::orderBy('id_berita', 'desc')->paginate(10);
         return view('admin.berita.index', compact('berita'));
     }
 
@@ -31,8 +31,8 @@ class BeritaController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'judul' => 'required|string|max:200',
-            'isi' => 'required|string',
+            'judul_berita' => 'required|string|max:200',
+            'isi_berita' => 'required|string',
             'tanggal_berita' => 'required|date',
             'penulis' => 'nullable|string|max:100'
         ]);
@@ -45,7 +45,7 @@ class BeritaController extends Controller
 
         Berita::create($request->all());
 
-        return redirect()->route('berita.index')
+        return redirect()->route('admin.berita.index')
             ->with('success', 'Berita berhasil ditambahkan');
     }
 
@@ -73,8 +73,8 @@ class BeritaController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'judul' => 'required|string|max:200',
-            'isi' => 'required|string',
+            'judul_berita' => 'required|string|max:200',
+            'isi_berita' => 'required|string',
             'tanggal_berita' => 'required|date',
             'penulis' => 'nullable|string|max:100'
         ]);
@@ -88,7 +88,7 @@ class BeritaController extends Controller
         $berita = Berita::findOrFail($id);
         $berita->update($request->all());
 
-        return redirect()->route('berita.index')
+        return redirect()->route('admin.berita.index')
             ->with('success', 'Berita berhasil diupdate');
     }
 
@@ -100,7 +100,7 @@ class BeritaController extends Controller
         $berita = Berita::findOrFail($id);
         $berita->delete();
 
-        return redirect()->route('berita.index')
+        return redirect()->route('admin.berita.index')
             ->with('success', 'Berita berhasil dihapus');
     }
 
@@ -109,7 +109,7 @@ class BeritaController extends Controller
      */
     public function frontend()
     {
-        $berita = Berita::latest()->paginate(6);
+        $berita = Berita::orderBy('tanggal_berita', 'desc')->paginate(6);
         return view('frontend.berita', compact('berita'));
     }
 
