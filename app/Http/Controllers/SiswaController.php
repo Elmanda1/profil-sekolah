@@ -97,5 +97,24 @@ class SiswaController extends Controller
 
         return redirect()->route('admin.siswa.index')
             ->with('success', 'Data siswa dihapus');
-    }    
+    }
+    
+    // Tambahkan method ini di SiswaController
+    public function frontend(Request $request)
+    {
+    $query = Siswa::query();
+    
+    // Search
+    if ($request->has('search') && !empty($request->search)) {
+        $query->where('nama_siswa', 'like', '%' . $request->search . '%')
+              ->orWhere('nis', 'like', '%' . $request->search . '%');
+    }
+    
+    $siswa = $query->orderBy('nama_siswa')->paginate(12);
+    
+    // Sementara tidak ada filter kelas karena field tidak ada
+    $kelas_list = collect([]); // empty collection
+    
+    return view('frontend.profilSiswa', compact('siswa', 'kelas_list'));
+    }
 }

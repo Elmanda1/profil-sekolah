@@ -11,13 +11,10 @@ Route::get('/', function () {
     return view('frontend.home');
 });
 
-Route::get('/profil-pengajar', function () {
-    return view('frontend.profilPengajar');
-});
+// Update route profil-pengajar untuk menggunakan controller
+Route::get('/profil-pengajar', [GuruController::class, 'frontend'])->name('guru.profiles');
 
-Route::get('/profil-siswa', function () {
-    return view('frontend.profilSiswa');
-});
+Route::get('/profil-siswa', [SiswaController::class, 'frontend'])->name('siswa.profiles');
 
 // Frontend Berita Routes
 Route::get('/berita', [BeritaController::class, 'frontend'])->name('frontend.berita');

@@ -11,13 +11,21 @@ class GuruController extends Controller
     public function index(Request $request)
     {
         $search = $request->get("search");
-        $guru = GUru::when($search, function ($query, $search){
+        $guru = Guru::when($search, function ($query, $search){
                 return $query->search($search);
             })
             ->orderBy('nama_guru', 'asc')
             ->paginate(10);
 
         return view('admin.guru.index', compact('guru', 'search'));
+    }
+
+    // Method untuk frontend profil pengajar
+    public function frontend(Request $request)
+    {
+        $guru = Guru::orderBy('nama_guru', 'asc')->paginate(12);
+        
+        return view('frontend.profilPengajar', compact('guru'));
     }
 
     public function create ()
@@ -67,14 +75,14 @@ class GuruController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'nip' => 'required|string|max:20|unique:tb_guru,nip,' . $guru->id_guru . ',id_guru',
-            'nama_siswa' => 'required|string|max:100',
+            'nama_guru' => 'required|string|max:100', // Perbaikan: sebelumnya nama_siswa
             'jenis_kelamin' => 'required|in:L,P',
             'mata_pelajaran' => 'required|string|max:100',
             'alamat' => 'nullable|string'
         ], [
             'nip.required' => 'NIP wajib diisi',
             'nip.unique' => 'NIP sudah terdaftar',
-            'nama_siswa.required' => 'Nama Guru wajib diisi',
+            'nama_guru.required' => 'Nama Guru wajib diisi', // Perbaikan: sebelumnya nama_siswa
             'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih',
             'mata_pelajaran.required' => 'Mata Pelajaran wajib diisi'
         ]);
@@ -91,7 +99,7 @@ class GuruController extends Controller
             ->with('success', 'Data Guru berhasil diperbarui');
     }
 
-    public function destroy(guru $guru)
+    public function destroy(Guru $guru) // Perbaikan: sebelumnya guru (huruf kecil)
     {
         $guru->delete();
 
