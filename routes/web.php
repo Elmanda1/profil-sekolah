@@ -23,6 +23,18 @@ Route::get('/prestasi', function () {
 });
 
 Route::get('/admin', function () {
-    return view('admin.dashboard', ['title' => 'Dashboard']);
+    return view('admin.dashboard');
+});
+
+Route::get('/admin/data-siswa', function () {
+    return view('admin.data-siswa');
+})->name('admin.data-siswa');
+
+Route::get('/admin/data-guru', function () {
+    return view('admin.data-guru');
+})->name('admin.data-guru');
+
+Route::prefix('admin')->group(function () {
+    Route::get('/dashboard', fn() => view('admin.dashboard'))->name('admin.dashboard');
 });
 

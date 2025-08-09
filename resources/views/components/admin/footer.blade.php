@@ -1,7 +1,4 @@
-<footer class="main-footer">
-    <strong>&copy; {{ date('Y') }} <a href="#">Your Company</a>.</strong>
+<footer class="main-footer text-center">
+    <strong>Copyright &copy; {{ date('Y') }} <a href="#">SMAN 100 Jakarta </a>.</strong>
     All rights reserved.
-    <div class="float-right d-none d-sm-inline-block">
-        <b>Version</b> 3.2.0
-    </div>
 </footer>
