@@ -47,10 +47,21 @@
 
     <!-- Sidebar -->
     <div class="sidebar">
+      <!-- Sidebar user panel (optional) -->
+      <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+        <div class="image">
+          <img src="{{ asset('adminlte/dist/img/user2-160x160.jpg') }}" class="img-circle elevation-2" alt="User Image">
+        </div>
+        <div class="info">
+          <a href="#" class="d-block">Administrator</a>
+        </div>
+      </div>
+
       <!-- Sidebar Menu -->
       <nav class="mt-2">
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
           
+          <!-- Dashboard -->
           <li class="nav-item">
             <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
               <i class="nav-icon fas fa-tachometer-alt"></i>
@@ -58,9 +69,13 @@
             </a>
           </li>
 
+          <!-- Data Master Header -->
+          <li class="nav-header">DATA MASTER</li>
+
+          <!-- Data Siswa -->
           <li class="nav-item {{ request()->routeIs('admin.siswa.*') ? 'menu-open' : '' }}">
             <a href="#" class="nav-link {{ request()->routeIs('admin.siswa.*') ? 'active' : '' }}">
-              <i class="nav-icon fas fa-users"></i>
+              <i class="nav-icon fas fa-user-graduate"></i>
               <p>
                 Data Siswa
                 <i class="right fas fa-angle-left"></i>
@@ -82,6 +97,7 @@
             </ul>
           </li>
 
+          <!-- Data Guru -->
           <li class="nav-item {{ request()->routeIs('admin.guru.*') ? 'menu-open' : '' }}">
             <a href="#" class="nav-link {{ request()->routeIs('admin.guru.*') ? 'active' : '' }}">
               <i class="nav-icon fas fa-chalkboard-teacher"></i>
@@ -104,6 +120,80 @@
                 </a>
               </li>
             </ul>
+          </li>
+
+          <!-- Content Management Header -->
+          <li class="nav-header">KONTEN</li>
+
+          <!-- Data Berita -->
+          <li class="nav-item {{ request()->routeIs('admin.berita.*') ? 'menu-open' : '' }}">
+            <a href="#" class="nav-link {{ request()->routeIs('admin.berita.*') ? 'active' : '' }}">
+              <i class="nav-icon fas fa-newspaper"></i>
+              <p>
+                Data Berita
+                <span class="right badge badge-info">{{ \App\Models\Berita::count() ?? 0 }}</span>
+                <i class="right fas fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="{{ route('admin.berita.index') }}" class="nav-link {{ request()->routeIs('admin.berita.index') ? 'active' : '' }}">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Daftar Berita</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ route('admin.berita.create') }}" class="nav-link {{ request()->routeIs('admin.berita.create') ? 'active' : '' }}">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Tambah Berita</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+
+          <!-- Data Prestasi -->
+          <li class="nav-item {{ request()->routeIs('admin.prestasi.*') ? 'menu-open' : '' }}">
+            <a href="#" class="nav-link {{ request()->routeIs('admin.prestasi.*') ? 'active' : '' }}">
+              <i class="nav-icon fas fa-trophy"></i>
+              <p>
+                Data Prestasi
+                <span class="right badge badge-warning">{{ \App\Models\Prestasi::count() ?? 0 }}</span>
+                <i class="right fas fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="{{ route('admin.prestasi.index') }}" class="nav-link {{ request()->routeIs('admin.prestasi.index') ? 'active' : '' }}">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Daftar Prestasi</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ route('admin.prestasi.create') }}" class="nav-link {{ request()->routeIs('admin.prestasi.create') ? 'active' : '' }}">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Tambah Prestasi</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+
+          <!-- Lainnya Header -->
+          <li class="nav-header">LAINNYA</li>
+
+          <!-- Pengaturan -->
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fas fa-cogs"></i>
+              <p>Pengaturan</p>
+            </a>
+          </li>
+
+          <!-- Laporan -->
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fas fa-chart-bar"></i>
+              <p>Laporan</p>
+            </a>
           </li>
 
         </ul>
