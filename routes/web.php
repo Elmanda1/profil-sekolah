@@ -1,6 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SiswaController;
+use App\Http\Controllers\GuruController;
+
 
 Route::get('/', function () {
     return view('frontend.home');
@@ -22,19 +25,19 @@ Route::get('/prestasi', function () {
     return view('frontend.prestasi');
 });
 
-Route::get('/admin', function () {
+Route::prefix('admin')->name('admin.')->group(function () {
+    
+// Dashboard
+Route::get('/', function () {
     return view('admin.dashboard');
+})->name('dashboard');
+// Routes Siswa
+Route::resource('siswa', SiswaController::class)->parameters([
+    'siswa' => 'siswa:id_siswa'
+]);
+// Routes Guru
+Route::resource('guru', GuruController::class)->parameters([
+    'guru' => 'guru:id_guru'
+]);
+
 });
-
-Route::get('/admin/data-siswa', function () {
-    return view('admin.data-siswa');
-})->name('admin.data-siswa');
-
-Route::get('/admin/data-guru', function () {
-    return view('admin.data-guru');
-})->name('admin.data-guru');
-
-Route::prefix('admin')->group(function () {
-    Route::get('/dashboard', fn() => view('admin.dashboard'))->name('admin.dashboard');
-});
-
