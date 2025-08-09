@@ -5,18 +5,22 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use App\Models\Siswa;
-use App\Models\Guru;  
+use App\Models\Guru;
+use App\Models\Berita;
+use App\Models\Prestasi;
 
 class DatabaseSekolahSeeder extends Seeder
 {
     public function run()
     {
-
         // Disable foreign key checks untuk MySQL
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        
         // Truncate tables first to avoid duplicate entries
         Siswa::truncate();
         Guru::truncate();
+        Berita::truncate();
+        Prestasi::truncate();
 
         // Seed data siswa dari DML yang diberikan
         $dataSiswa = [
@@ -94,8 +98,69 @@ class DatabaseSekolahSeeder extends Seeder
             Guru::create($guru);
         }
 
+        // Seed data berita
+        $dataBerita = [
+            [
+                'judul' => 'SMA Negeri 100 Jakarta Raih Juara 1 Lomba Sains Nasional',
+                'isi' => 'Tim sains SMA Negeri 100 Jakarta berhasil meraih Juara 1 pada Lomba Sains Nasional tingkat SMA yang diadakan di Bandung. Kompetisi ini diikuti oleh lebih dari 200 sekolah dari seluruh Indonesia. Kepala sekolah, Drs. Budi Hartono, menyampaikan apresiasi yang tinggi kepada seluruh tim atas dedikasi dan kerja keras yang telah dilakukan. Keberhasilan ini diharapkan menjadi motivasi bagi siswa lainnya untuk terus berprestasi di bidang akademik maupun non-akademik.',
+                'tanggal_berita' => '2025-02-15',
+                'penulis' => 'Juen Denardy'
+            ],
+            [
+                'judul' => 'Peringatan Hari Guru Nasional di SMA Negeri 100 Jakarta',
+                'isi' => 'Dalam rangka memperingati Hari Guru Nasional, SMA Negeri 100 Jakarta menggelar upacara bendera yang diikuti oleh seluruh siswa, guru, dan staf sekolah. Pada acara tersebut, dilakukan pula pemberian penghargaan kepada guru-guru yang telah mengabdi lebih dari 20 tahun. Suasana haru dan penuh kebanggaan terasa di lapangan sekolah ketika siswa membacakan puisi untuk para guru mereka.',
+                'tanggal_berita' => '2025-11-25',
+                'penulis' => 'Falih Elmanda Ghaisan'
+            ],
+            [
+                'judul' => 'Pelatihan Literasi Digital untuk Siswa',
+                'isi' => 'Sebagai upaya meningkatkan keterampilan digital siswa, SMA Negeri 100 Jakarta menyelenggarakan pelatihan literasi digital yang bekerja sama dengan Kementerian Komunikasi dan Informatika. Pelatihan ini meliputi materi keamanan digital, etika bermedia sosial, dan pemanfaatan teknologi untuk pembelajaran. Kegiatan ini diikuti oleh seluruh siswa kelas X dan XI di aula sekolah.',
+                'tanggal_berita' => '2025-05-10',
+                'penulis' => 'Muhammad Rafif Dwiarka'
+            ],
+            [
+                'judul' => 'Penggalangan Dana untuk Korban Bencana Alam',
+                'isi' => 'OSIS SMA Negeri 100 Jakarta mengadakan kegiatan penggalangan dana untuk membantu korban bencana alam di Sulawesi. Seluruh warga sekolah turut berpartisipasi dengan menyumbangkan dana, pakaian layak pakai, dan makanan. Dana yang terkumpul mencapai lebih dari Rp 50 juta dan telah disalurkan melalui lembaga resmi. Kepala sekolah mengapresiasi semangat kepedulian sosial yang tinggi dari para siswa.',
+                'tanggal_berita' => '2025-01-20',
+                'penulis' => 'Aurelia Putri Adhira'
+            ],
+            [
+                'judul' => 'Festival Seni dan Budaya SMA Negeri 100 Jakarta',
+                'isi' => 'Dalam rangka memperingati HUT sekolah, SMA Negeri 100 Jakarta menggelar Festival Seni dan Budaya yang diikuti oleh seluruh siswa dari berbagai jurusan. Acara ini menampilkan tari tradisional, musik modern, drama, dan pameran karya seni siswa. Festival ini juga menjadi ajang untuk mempererat persaudaraan antar siswa sekaligus melestarikan budaya bangsa.',
+                'tanggal_berita' => '2025-09-05',
+                'penulis' => 'Aqila Zahra Meisya'
+            ]
+        ];
+
+        foreach ($dataBerita as $berita) {
+            Berita::create($berita);
+        }
+
+        // Seed data prestasi
+        $dataPrestasi = [
+            ['id_siswa' => 1, 'nama_prestasi' => 'Juara 1 Olimpiade Matematika Nasional', 'tahun' => 2025],
+            ['id_siswa' => 2, 'nama_prestasi' => 'Juara 2 Lomba Cerdas Cermat SMA se-DKI Jakarta', 'tahun' => 2024],
+            ['id_siswa' => 3, 'nama_prestasi' => 'Juara 1 Lomba Debat Bahasa Inggris Tingkat Kota', 'tahun' => 2025],
+            ['id_siswa' => 4, 'nama_prestasi' => 'Juara 3 Olimpiade Fisika SMA', 'tahun' => 2023],
+            ['id_siswa' => 5, 'nama_prestasi' => 'Juara 1 Lomba Menulis Cerpen Tingkat Kota', 'tahun' => 2025],
+            ['id_siswa' => 6, 'nama_prestasi' => 'Juara Harapan 1 Olimpiade Biologi', 'tahun' => 2024],
+            ['id_siswa' => 7, 'nama_prestasi' => 'Juara 2 Kejuaraan Basket Putra SMA', 'tahun' => 2025],
+            ['id_siswa' => 8, 'nama_prestasi' => 'Juara 1 Lomba Pidato Bahasa Indonesia', 'tahun' => 2023],
+            ['id_siswa' => 9, 'nama_prestasi' => 'Juara 2 Lomba Kimia SMA', 'tahun' => 2024],
+            ['id_siswa' => 10, 'nama_prestasi' => 'Juara 1 Lomba Desain Poster Kreatif', 'tahun' => 2025]
+        ];
+
+        foreach ($dataPrestasi as $prestasi) {
+            Prestasi::create($prestasi);
+        }
+
+        // Re-enable foreign key checks
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
         $this->command->info('Data lengkap berhasil di-seed!');
         $this->command->info('- 50 data siswa telah ditambahkan');
         $this->command->info('- 10 data guru telah ditambahkan');
+        $this->command->info('- 5 data berita telah ditambahkan');
+        $this->command->info('- 10 data prestasi telah ditambahkan');
     }
 }
