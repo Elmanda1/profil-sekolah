@@ -1,6 +1,6 @@
 <?php
 // 2025_08_08_000005_create_tb_siswa_table.php
-use Illuminate\Database\Migration\Migration;
+use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
