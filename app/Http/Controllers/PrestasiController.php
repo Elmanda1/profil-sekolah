@@ -1,125 +1,98 @@
 <?php
-
+// app/Http/Controllers/PrestasiController.php
 namespace App\Http\Controllers;
 
 use App\Models\Prestasi;
-use App\Models\Siswa;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class PrestasiController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $prestasi = Prestasi::with('siswa')->orderBy('id_prestasi', 'desc')->paginate(10);
+        $prestasi = Prestasi::with('sekolah')->latest()->paginate(10);
         return view('admin.prestasi.index', compact('prestasi'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        $siswa = Siswa::all();
-        return view('admin.prestasi.create', compact('siswa'));
+        return view('admin.prestasi.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'id_siswa' => 'required|exists:tb_siswa,id_siswa',
-            'nama_prestasi' => 'required|string|max:100',
-            'tahun' => 'nullable|integer|min:2000|max:' . (date('Y') + 1)
+        $validated = $request->validate([
+            'judul' => 'required|string|max:255',
+            'deskripsi' => 'required|string',
+            'tanggal' => 'required|date',
+            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+        if ($request->hasFile('gambar')) {
+            $validated['gambar'] = $request->file('gambar')->store('prestasi', 'public');
         }
 
-        Prestasi::create($request->all());
+        $validated['id_sekolah'] = 1; // Default sekolah ID
+
+        Prestasi::create($validated);
 
         return redirect()->route('admin.prestasi.index')
-            ->with('success', 'Prestasi berhasil ditambahkan');
+                        ->with('success', 'Data prestasi berhasil ditambahkan');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show($id)
+    public function show(Prestasi $prestasi)
     {
-        $prestasi = Prestasi::with('siswa')->findOrFail($id);
         return view('admin.prestasi.show', compact('prestasi'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
+    public function edit(Prestasi $prestasi)
     {
-        $prestasi = Prestasi::findOrFail($id);
-        $siswa = Siswa::all();
-        return view('admin.prestasi.edit', compact('prestasi', 'siswa'));
+        return view('admin.prestasi.edit', compact('prestasi'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id)
+    public function update(Request $request, Prestasi $prestasi)
     {
-        $validator = Validator::make($request->all(), [
-            'id_siswa' => 'required|exists:tb_siswa,id_siswa',
-            'nama_prestasi' => 'required|string|max:100',
-            'tahun' => 'nullable|integer|min:2000|max:' . (date('Y') + 1)
+        $validated = $request->validate([
+            'judul' => 'required|string|max:255',
+            'deskripsi' => 'required|string',
+            'tanggal' => 'required|date',
+            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+        if ($request->hasFile('gambar')) {
+            if ($prestasi->gambar) {
+                Storage::disk('public')->delete($prestasi->gambar);
+            }
+            $validated['gambar'] = $request->file('gambar')->store('prestasi', 'public');
         }
 
-        $prestasi = Prestasi::findOrFail($id);
-        $prestasi->update($request->all());
+        $prestasi->update($validated);
 
         return redirect()->route('admin.prestasi.index')
-            ->with('success', 'Prestasi berhasil diupdate');
+                        ->with('success', 'Data prestasi berhasil diupdate');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
+    public function destroy(Prestasi $prestasi)
     {
-        $prestasi = Prestasi::findOrFail($id);
+        if ($prestasi->gambar) {
+            Storage::disk('public')->delete($prestasi->gambar);
+        }
+        
         $prestasi->delete();
 
         return redirect()->route('admin.prestasi.index')
-            ->with('success', 'Prestasi berhasil dihapus');
+                        ->with('success', 'Data prestasi berhasil dihapus');
     }
 
-    /**
-     * Display prestasi for frontend
-     */
-    public function frontend()
+    // Frontend methods
+    public function frontendIndex()
     {
-        $prestasi = Prestasi::with('siswa')->orderBy('id_prestasi', 'desc')->paginate(9);
+        $prestasi = Prestasi::latest()->paginate(9);
         return view('frontend.prestasi', compact('prestasi'));
     }
 
-    /**
-     * Filter prestasi by year
-     */
-    public function byYear($year)
+    public function frontendShow(Prestasi $prestasi)
     {
-        $prestasi = Prestasi::with('siswa')->where('tahun', $year)->orderBy('id_prestasi', 'desc')->paginate(9);
-        return view('frontend.prestasi', compact('prestasi'));
+        return view('frontend.prestasi-detail', compact('prestasi'));
     }
 }
