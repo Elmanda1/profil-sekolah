@@ -1,56 +1,45 @@
 <?php
-
+// app/Http/Controllers/GuruController.php
 namespace App\Http\Controllers;
 
 use App\Models\Guru;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class GuruController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $search = $request->get("search");
-        $guru = GUru::when($search, function ($query, $search){
-                return $query->search($search);
-            })
-            ->orderBy('nama_guru', 'asc')
-            ->paginate(10);
-
-        return view('admin.guru.index', compact('guru', 'search'));
+        $guru = Guru::with('sekolah')->latest()->paginate(10);
+        return view('admin.guru.index', compact('guru'));
     }
 
-    public function create ()
+    public function create()
     {
         return view('admin.guru.create');
     }
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(),[
-            'nip' => 'required|string|max:20|unique:tb_guru,nip',
-            'nama_guru' => 'required|string|max:100',
+        $validated = $request->validate([
+            'nama_guru' => 'required|string|max:255',
             'jenis_kelamin' => 'required|in:L,P',
-            'mata_pelajaran' => 'required|string|max:100',
-            'alamat' => 'nullable|string'
-        ], [
-            'nip.required' => 'NIP wajib diisi',
-            'nip.unique' => 'NIP sudah terdaftar',
-            'nama_guru.required' => 'Nama Guru wajib diisi',
-            'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih',
-            'mata_pelajaran.required' => 'Mata Pelajaran wajib diisi'
+            'email' => 'nullable|email|unique:tb_guru,email',
+            'no_telp' => 'nullable|string|max:50',
+            'alamat' => 'nullable|string',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+        if ($request->hasFile('foto')) {
+            $validated['foto'] = $request->file('foto')->store('guru', 'public');
         }
 
-        Guru::create($request->all());
+        $validated['id_sekolah'] = 1; // Default sekolah ID
+
+        Guru::create($validated);
 
         return redirect()->route('admin.guru.index')
-            ->with('success', 'Data Guru berhasil ditambahkan');
+                        ->with('success', 'Data guru berhasil ditambahkan');
     }
 
     public function show(Guru $guru)
@@ -65,37 +54,44 @@ class GuruController extends Controller
 
     public function update(Request $request, Guru $guru)
     {
-        $validator = Validator::make($request->all(), [
-            'nip' => 'required|string|max:20|unique:tb_guru,nip,' . $guru->id_guru . ',id_guru',
-            'nama_siswa' => 'required|string|max:100',
+        $validated = $request->validate([
+            'nama_guru' => 'required|string|max:255',
             'jenis_kelamin' => 'required|in:L,P',
-            'mata_pelajaran' => 'required|string|max:100',
-            'alamat' => 'nullable|string'
-        ], [
-            'nip.required' => 'NIP wajib diisi',
-            'nip.unique' => 'NIP sudah terdaftar',
-            'nama_siswa.required' => 'Nama Guru wajib diisi',
-            'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih',
-            'mata_pelajaran.required' => 'Mata Pelajaran wajib diisi'
+            'email' => 'nullable|email|unique:tb_guru,email,' . $guru->id_guru . ',id_guru',
+            'no_telp' => 'nullable|string|max:50',
+            'alamat' => 'nullable|string',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+        if ($request->hasFile('foto')) {
+            if ($guru->foto) {
+                Storage::disk('public')->delete($guru->foto);
+            }
+            $validated['foto'] = $request->file('foto')->store('guru', 'public');
         }
 
-        $guru->update($request->all());
+        $guru->update($validated);
 
         return redirect()->route('admin.guru.index')
-            ->with('success', 'Data Guru berhasil diperbarui');
+                        ->with('success', 'Data guru berhasil diupdate');
     }
 
-    public function destroy(guru $guru)
+    public function destroy(Guru $guru)
     {
+        if ($guru->foto) {
+            Storage::disk('public')->delete($guru->foto);
+        }
+        
         $guru->delete();
 
         return redirect()->route('admin.guru.index')
-            ->with('success', 'Data Guru dihapus');
-    }    
+                        ->with('success', 'Data guru berhasil dihapus');
+    }
+
+    // Frontend method
+    public function frontendIndex()
+    {
+        $guru = Guru::latest()->get();
+        return view('frontend.profilPengajar', compact('guru'));
+    }
 }
