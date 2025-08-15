@@ -10,11 +10,11 @@ class SekolahSeeder extends Seeder
     public function run()
     {
         Sekolah::create([
-            'nama_sekolah' => 'SMA Negeri 1 Jakarta',
+            'nama_sekolah' => 'SMA Negeri 100 Jakarta',
             'alamat' => 'Jl. Pendidikan No. 123, Jakarta',
             'no_telp' => '021-12345678',
-            'email' => 'info@sma1jakarta.sch.id',
-            'website' => 'https://sma1jakarta.sch.id'
+            'email' => 'info@sma100jakarta.sch.id',
+            'website' => 'https://sma100jakarta.sch.id'
         ]);
     }
 }
