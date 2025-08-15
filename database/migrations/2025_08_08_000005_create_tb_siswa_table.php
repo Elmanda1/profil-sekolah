@@ -13,6 +13,7 @@ return new class extends Migration
             $table->unsignedBigInteger('id_sekolah');
             $table->string('nisn', 50)->unique();
             $table->string('nama_siswa');
+            $table->enum('jenis_kelamin', ['L', 'P']);
             $table->string('email')->unique()->nullable();
             $table->string('no_telp', 50)->nullable();
             $table->text('alamat')->nullable();

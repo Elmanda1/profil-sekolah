@@ -1,22 +1,25 @@
 <?php
-// app/Models/Guru.php
+// app/Models/Artikel.php
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Guru extends Model
+class Artikel extends Model
 {
-    protected $table = 'tb_guru';
-    protected $primaryKey = 'id_guru';
+    protected $table = 'tb_artikel';
+    protected $primaryKey = 'id_artikel';
     
     protected $fillable = [
         'id_sekolah',
-        'nama_guru',
-        'email',
-        'no_telp',
-        'alamat',
-        'foto'
+        'judul',
+        'isi',
+        'tanggal',
+        'gambar'
+    ];
+
+    protected $casts = [
+        'tanggal' => 'date'
     ];
 
     public function sekolah(): BelongsTo

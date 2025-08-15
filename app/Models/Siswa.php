@@ -1,40 +1,33 @@
 <?php
-
+// app/Models/Siswa.php
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Siswa extends Model
 {
-    protected $table ="tb_siswa";
+    protected $table = 'tb_siswa';
     protected $primaryKey = 'id_siswa';
-    public $timestamps = false;
-
+    
     protected $fillable = [
-        'nis',
+        'id_sekolah',
+        'nisn',
         'nama_siswa',
-        'jenis_kelamin',
-        'tanggal_lahir',
+        'email',
+        'no_telp',
         'alamat',
+        'foto'
     ];
 
-    protected $casts = [
-        'tanggal_lahir' => 'date'
-    ];
-
-    public function getTanggalLahirFormatAttribute()
+    public function sekolah(): BelongsTo
     {
-        return $this->tanggal_lahir ? $this->tanggal_lahir->format('d/m/Y') : '-';
+        return $this->belongsTo(Sekolah::class, 'id_sekolah', 'id_sekolah');
     }
 
-    public function getJenisKelaminLengkapAttribute()
+    public function kelas(): BelongsToMany
     {
-        return $this->jenis_kelamin = 'L' ? 'Laki-laki' : 'Perempuan';
-    }
-
-    public function scopeSearch($query, $search)
-    {
-        return $query->where('manama_siswa'. 'LIKE', "%{$search}%")
-                    ->orwhere('nis', 'LIKE', "%{$search}%");
+        return $this->belongsToMany(Kelas::class, 'tb_kelas_siswa', 'id_siswa', 'id_kelas');
     }
 }

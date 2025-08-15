@@ -1,46 +1,29 @@
-<?php 
-
+<?php
+// app/Models/Prestasi.php
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model; 
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Prestasi extends Model
 {
     protected $table = 'tb_prestasi';
     protected $primaryKey = 'id_prestasi';
-    public $timestamps = false;
-
+    
     protected $fillable = [
-        'id_siswa',
-        'nama_prestasi',
-        'tahun'
+        'id_sekolah',
+        'judul',
+        'deskripsi',
+        'tanggal',
+        'gambar'
     ];
 
     protected $casts = [
-        'tahun' => 'integer'
+        'tanggal' => 'date'
     ];
 
-    // Relasi dengan model Siswa
-    public function siswa()
+    public function sekolah(): BelongsTo
     {
-        return $this->belongsTo(Siswa::class, 'id_siswa', 'id_siswa');
-    }
-
-    // Scope untuk prestasi berdasarkan tahun
-    public function scopeByYear($query, $year)
-    {
-        return $query->where('tahun', $year);
-    }
-
-    // Scope untuk prestasi terbaru
-    public function scopeLatest($query)
-    {
-        return $query->orderBy('tahun', 'desc');
-    }
-
-    // Accessor untuk nama lengkap siswa
-    public function getNamaSiswaAttribute()
-    {
-        return $this->siswa ? $this->siswa->nama : 'N/A';
+        return $this->belongsTo(Sekolah::class, 'id_sekolah', 'id_sekolah');
     }
 }

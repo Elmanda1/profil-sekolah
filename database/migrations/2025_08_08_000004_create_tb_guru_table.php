@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id('id_guru');
             $table->unsignedBigInteger('id_sekolah');
             $table->string('nama_guru');
+            $table->enum('jenis_kelamin', ['L', 'P']);
             $table->string('email')->unique()->nullable();
             $table->string('no_telp', 50)->nullable();
             $table->text('alamat')->nullable();
