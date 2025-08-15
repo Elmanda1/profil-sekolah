@@ -13,11 +13,22 @@ class Guru extends Model
     protected $fillable = [
         'id_sekolah',
         'nama_guru',
+        'jenis_kelamin',
         'email',
         'no_telp',
         'alamat',
         'foto'
     ];
+
+    protected $casts = [
+        'jenis_kelamin' => 'string'
+    ];
+
+    // Accessor untuk jenis kelamin
+    public function getJenisKelaminTextAttribute()
+    {
+        return $this->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan';
+    }
 
     public function sekolah(): BelongsTo
     {

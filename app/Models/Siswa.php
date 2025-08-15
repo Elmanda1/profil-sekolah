@@ -15,11 +15,22 @@ class Siswa extends Model
         'id_sekolah',
         'nisn',
         'nama_siswa',
+        'jenis_kelamin',
         'email',
         'no_telp',
         'alamat',
         'foto'
     ];
+
+    protected $casts = [
+        'jenis_kelamin' => 'string'
+    ];
+
+    // Accessor untuk jenis kelamin
+    public function getJenisKelaminTextAttribute()
+    {
+        return $this->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan';
+    }
 
     public function sekolah(): BelongsTo
     {
