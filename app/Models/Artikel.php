@@ -1,19 +1,19 @@
 <?php
-// app/Models/Prestasi.php
+// app/Models/Artikel.php
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Prestasi extends Model
+class Artikel extends Model
 {
-    protected $table = 'tb_prestasi';
-    protected $primaryKey = 'id_prestasi';
+    protected $table = 'tb_artikel';
+    protected $primaryKey = 'id_artikel';
     
     protected $fillable = [
         'id_sekolah',
         'judul',
-        'deskripsi',
+        'isi',
         'tanggal',
         'gambar'
     ];

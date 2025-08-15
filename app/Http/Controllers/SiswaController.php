@@ -1,56 +1,46 @@
 <?php
-
+// app/Http/Controllers/SiswaController.php
 namespace App\Http\Controllers;
 
 use App\Models\Siswa;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class SiswaController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $search = $request->get("search");
-        $siswa = Siswa::when($search, function ($query, $search){
-                return $query->search($search);
-            })
-            ->orderBy('nama_siswa', 'asc')
-            ->paginate(10);
-
-        return view('admin.siswa.index', compact('siswa', 'search'));
+        $siswa = Siswa::with('sekolah')->latest()->paginate(10);
+        return view('admin.siswa.index', compact('siswa'));
     }
 
-    public function create ()
+    public function create()
     {
         return view('admin.siswa.create');
     }
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'nis' => 'required|string|max:20|unique:tb_siswa,nis',
-            'nama_siswa' => 'required|string|max:100',
+        $validated = $request->validate([
+            'nisn' => 'required|string|max:50|unique:tb_siswa,nisn',
+            'nama_siswa' => 'required|string|max:255',
             'jenis_kelamin' => 'required|in:L,P',
-            'tanggal_lahir' => 'nullable|date',
-            'alamat' => 'nullable|string'
-        ], [
-            'nis.required' => 'NIS wajib diisi',
-            'nis.unique' => 'NIS sudah terdaftar',
-            'nama_siswa.required' => 'Nama siswa wajib diisi',
-            'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih',
-            'tanggal_lahir.date' => 'Format tanggal tidak valid'
+            'email' => 'nullable|email|unique:tb_siswa,email',
+            'no_telp' => 'nullable|string|max:50',
+            'alamat' => 'nullable|string',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+        if ($request->hasFile('foto')) {
+            $validated['foto'] = $request->file('foto')->store('siswa', 'public');
         }
 
-        Siswa::create($request->all());
+        $validated['id_sekolah'] = 1; // Default sekolah ID
+
+        Siswa::create($validated);
 
         return redirect()->route('admin.siswa.index')
-            ->with('success', 'Data siswa berhasil ditambahkan');
+                        ->with('success', 'Data siswa berhasil ditambahkan');
     }
 
     public function show(Siswa $siswa)
@@ -65,56 +55,45 @@ class SiswaController extends Controller
 
     public function update(Request $request, Siswa $siswa)
     {
-        $validator = Validator::make($request->all(), [
-            'nis' => 'required|string|max:20|unique:tb_siswa,nis,' . $siswa->id_siswa . ',id_siswa',
-            'nama_siswa' => 'required|string|max:100',
+        $validated = $request->validate([
+            'nisn' => 'required|string|max:50|unique:tb_siswa,nisn,' . $siswa->id_siswa . ',id_siswa',
+            'nama_siswa' => 'required|string|max:255',
             'jenis_kelamin' => 'required|in:L,P',
-            'tanggal_lahir' => 'nullable|date',
-            'alamat' => 'nullable|string'
-        ], [
-            'nis.required' => 'NIS wajib diisi',
-            'nis.unique' => 'NIS sudah terdaftar',
-            'nama_siswa.required' => 'Nama siswa wajib diisi',
-            'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih',
-            'tanggal_lahir.date' => 'Format tanggal tidak valid'
+            'email' => 'nullable|email|unique:tb_siswa,email,' . $siswa->id_siswa . ',id_siswa',
+            'no_telp' => 'nullable|string|max:50',
+            'alamat' => 'nullable|string',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+        if ($request->hasFile('foto')) {
+            if ($siswa->foto) {
+                Storage::disk('public')->delete($siswa->foto);
+            }
+            $validated['foto'] = $request->file('foto')->store('siswa', 'public');
         }
 
-        $siswa->update($request->all());
+        $siswa->update($validated);
 
         return redirect()->route('admin.siswa.index')
-            ->with('success', 'Data siswa berhasil diperbarui');
+                        ->with('success', 'Data siswa berhasil diupdate');
     }
 
     public function destroy(Siswa $siswa)
     {
+        if ($siswa->foto) {
+            Storage::disk('public')->delete($siswa->foto);
+        }
+        
         $siswa->delete();
 
         return redirect()->route('admin.siswa.index')
-            ->with('success', 'Data siswa dihapus');
+                        ->with('success', 'Data siswa berhasil dihapus');
     }
-    
-    // Tambahkan method ini di SiswaController
-    public function frontend(Request $request)
+
+    // Frontend method
+    public function frontendIndex()
     {
-    $query = Siswa::query();
-    
-    // Search
-    if ($request->has('search') && !empty($request->search)) {
-        $query->where('nama_siswa', 'like', '%' . $request->search . '%')
-              ->orWhere('nis', 'like', '%' . $request->search . '%');
-    }
-    
-    $siswa = $query->orderBy('nama_siswa')->paginate(12);
-    
-    // Sementara tidak ada filter kelas karena field tidak ada
-    $kelas_list = collect([]); // empty collection
-    
-    return view('frontend.profilSiswa', compact('siswa', 'kelas_list'));
+        $siswa = Siswa::latest()->paginate(12);
+        return view('frontend.profilSiswa', compact('siswa'));
     }
 }

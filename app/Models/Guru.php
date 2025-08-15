@@ -1,32 +1,37 @@
 <?php
-
+// app/Models/Guru.php
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Guru extends Model
 {
     protected $table = 'tb_guru';
-    protected $primarykey = 'id_guru';
-    public $timestamps = false;
-
+    protected $primaryKey = 'id_guru';
+    
     protected $fillable = [
-        'nip',
+        'id_sekolah',
         'nama_guru',
         'jenis_kelamin',
-        'mata_pelajaran',
-        'alamat'
+        'email',
+        'no_telp',
+        'alamat',
+        'foto'
     ];
 
-    public function getJenisKelaminLengkapAttribute()
+    protected $casts = [
+        'jenis_kelamin' => 'string'
+    ];
+
+    // Accessor untuk jenis kelamin
+    public function getJenisKelaminTextAttribute()
     {
-        return $this->jenis_kelamin == 'L' ? 'Laki-laki' : 'Perempuan';
+        return $this->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan';
     }
 
-    public function scopeSearch($query, $search)
+    public function sekolah(): BelongsTo
     {
-        return $query->where('nama_guru', 'LIKE', "%{$search}%")
-                     ->orWhere('nip', 'LIKE', "%{$search}%")
-                     ->orwhere('mata_pelajaran', 'LIKE', "%{$search}%");
+        return $this->belongsTo(Sekolah::class, 'id_sekolah', 'id_sekolah');
     }
 }
