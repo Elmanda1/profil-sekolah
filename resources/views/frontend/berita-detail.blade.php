@@ -1,6 +1,6 @@
 @extends('layouts.frontend')
 
-@section('title', $berita->judul_berita)
+@section('title', $artikel->judul_artikel)
 
 @section('content')
     <div class='min-h-screen w-full py-20'>
@@ -9,79 +9,83 @@
             <nav class='flex items-center space-x-2 text-sm text-gray-600 mb-8'>
                 <a href='/' class='hover:text-blue-600'>Home</a>
                 <span>→</span>
-                <a href='{{ route('frontend.berita') }}' class='hover:text-blue-600'>Berita</a>
+                <a href='{{ route('frontend.berita') }}' class='hover:text-blue-600'>artikel</a>
                 <span>→</span>
-                <span class='text-gray-900'>{{ Str::limit($berita->judul_berita, 50) }}</span>
+                <span class='text-gray-900'>{{ Str::limit($artikel->judul, 50) }}</span>
             </nav>
 
             <!-- Article Header -->
             <header class='mb-8'>
-                <h1 class='text-4xl font-bold text-gray-900 mb-4'>{{ $berita->judul_berita }}</h1>
+                <h1 class='text-4xl font-bold text-gray-900 mb-4'>{{ $artikel->judul }}</h1>
                 
                 <div class='flex items-center gap-4 text-gray-600 mb-6'>
                     <div class='flex items-center gap-2'>
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                         </svg>
-                        <span>{{ \Carbon\Carbon::parse($berita->tanggal_berita)->format('d F Y') }}</span>
+                        <span>{{ \Carbon\Carbon::parse($artikel->tanggal)->format('d F Y') }}</span>
                     </div>
                     
-                    @if($berita->penulis)
+                    @if($artikel->penulis)
                         <div class='flex items-center gap-2'>
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                             </svg>
-                            <span>{{ $berita->penulis }}</span>
+                            <span>{{ $artikel->penulis }}</span>
                         </div>
                     @endif
                 </div>
             </header>
 
             <!-- Featured Image -->
-            @if($berita->gambar && file_exists(public_path('storage/' . $berita->gambar)))
+            @if($artikel->gambar && file_exists(public_path('storage/' . $artikel->gambar)))
                 <div class='mb-8'>
-                    <img src="{{ asset('storage/' . $berita->gambar) }}" 
-                         alt="Gambar {{ $berita->judul_berita }}" 
+                    <img src="{{ asset('storage/' . $artikel->gambar) }}" 
+                         alt="Gambar {{ $artikel->judul_artikel }}" 
                          class='w-full h-96 object-cover rounded-lg shadow-lg'>
+                </div>
+            @else
+                <div class='mb-8 w-full h-96 object-cover rounded-lg shadow-lg flex items-center justify-center'>
+                    tidak ada gambar
                 </div>
             @endif
 
             <!-- Article Content -->
             <article class='prose prose-lg max-w-none mb-12'>
                 <div class='text-gray-800 leading-relaxed'>
-                    {!! nl2br(e($berita->isi_berita)) !!}
+                    {!! nl2br(e($artikel->isi)) !!}
                 </div>
             </article>
 
             <!-- Back Button -->
             <div class='border-t pt-8'>
-                <a href='{{ route('frontend.berita') }}' 
+                <a href='{{ route('frontend.berita') }}'
                    class='inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors'>
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                     </svg>
-                    Kembali ke Berita
+                    Kembali ke artikel
                 </a>
             </div>
 
             <!-- Related Articles -->
             @php
-                $relatedBerita = \App\Models\Berita::where('id_berita', '!=', $berita->id_berita)
-                                                   ->orderBy('tanggal_berita', 'desc')
+                $relatedartikel = \App\Models\artikel::where('id_artikel', '!=', $artikel->id_artikel)
+                                                   ->orderBy('tanggal', 'desc')
                                                    ->take(3)
                                                    ->get();
             @endphp
 
-            @if($relatedBerita->count() > 0)
+            @if($relatedartikel->count() > 0)
                 <section class='mt-16'>
-                    <h2 class='text-2xl font-bold text-gray-900 mb-8'>Berita Lainnya</h2>
+                    <h2 class='text-2xl font-bold text-gray-900 mb-8'>artikel Lainnya</h2>
                     
                     <div class='grid grid-cols-1 md:grid-cols-3 gap-6'>
-                        @foreach($relatedBerita as $related)
+                        @foreach($relatedartikel as $related)
                             <article class='bg-white rounded-lg shadow-lg overflow-hidden hover:-translate-y-2 transition-all duration-300'>
                                 @if($related->gambar && file_exists(public_path('storage/' . $related->gambar)))
                                     <img src="{{ asset('storage/' . $related->gambar) }}" 
-                                         alt="Gambar {{ $related->judul_berita }}" 
+                                         alt="Gambar {{ $related->judul_artikel }}" 
                                          class='w-full h-48 object-cover'>
                                 @else
                                     <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
@@ -93,18 +97,18 @@
                                 
                                 <div class='p-4'>
                                     <h3 class='font-semibold text-lg mb-2 line-clamp-2'>
-                                        <a href="{{ route('frontend.berita.detail', $related->id_berita) }}" 
+                                        <a href="{{ route('frontend.berita.detail', $related->id_artikel) }}" 
                                            class='hover:text-blue-600 transition-colors'>
-                                            {{ $related->judul_berita }}
+                                            {{ $related->judul }}
                                         </a>
                                     </h3>
                                     
                                     <p class='text-gray-600 text-sm mb-3'>
-                                        {{ \Carbon\Carbon::parse($related->tanggal_berita)->format('d M Y') }}
+                                        {{ \Carbon\Carbon::parse($related->tanggal)->format('d M Y') }}
                                     </p>
                                     
                                     <p class='text-gray-700 text-sm line-clamp-3'>
-                                        {{ Str::limit(strip_tags($related->isi_berita), 120) }}
+                                        {{ Str::limit(strip_tags($related->isi), 120) }}
                                     </p>
                                 </div>
                             </article>

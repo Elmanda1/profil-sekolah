@@ -12,20 +12,18 @@ Route::get('/', function () {
     return view('frontend.home');
 })->name('frontend.home');
 
-Route::get('/profil-pengajar', function () {
-    return view('frontend.profilPengajar');
-})->name('frontend.profil-pengajar');
+Route::get('/profil-pengajar', [GuruController::class, 'profilPengajar'])
+    ->name('frontend.profil-pengajar');
 
-Route::get('/profil-siswa', function () {
-    return view('frontend.profilSiswa');
-})->name('frontend.profil-siswa');
+Route::get('/profil-siswa', [SiswaController::class, 'profilSiswa'])
+    ->name('frontend.profil-siswa');
 
 // Frontend Berita/Artikel Routes
-Route::get('/berita', [ArtikelController::class, 'frontend'])->name('frontend.berita');
-Route::get('/berita/{artikel:id_berita}', [ArtikelController::class, 'detail'])->name('frontend.berita.detail');
+Route::get('/berita', [ArtikelController::class, 'berita'])->name('frontend.berita');
+Route::get('/berita/{id}', [ArtikelController::class, 'detail'])->name('frontend.berita.detail');
 
 // Frontend Prestasi Routes
-Route::get('/prestasi', [PrestasiController::class, 'frontend'])->name('frontend.prestasi');
+Route::get('/prestasi', [PrestasiController::class, 'prestasi'])->name('frontend.prestasi');
 Route::get('/prestasi/tahun/{year}', [PrestasiController::class, 'byYear'])->name('frontend.prestasi.byYear');
 
 Route::prefix('admin')->name('admin.')->group(function () {

@@ -1,6 +1,6 @@
 @php
     // Ambil 5 berita terbaru untuk ditampilkan di homepage
-    $latestBerita = \App\Models\Berita::orderBy('tanggal_berita', 'desc')->take(5)->get();
+    $latestBerita = \App\Models\Artikel::orderBy('tanggal', 'desc')->take(5)->get();
 @endphp
 
 <div class='flex flex-col h-[70vh] w-full justify-start items-center pb-10 gap-12'>
@@ -35,7 +35,7 @@
                     </div>
                     
                     <!-- Link to detail -->
-                    <a href="{{ route('frontend.berita.detail', $berita->id_berita) }}" class='absolute inset-0 z-10'></a>
+                    <a href="{{ route('frontend.berita.detail', $berita->id_artikel) }}" class='absolute inset-0 z-10'></a>
                 </div>
             @empty
                 <div class='flex justify-center items-center w-full h-full'>

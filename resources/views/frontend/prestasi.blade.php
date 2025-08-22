@@ -8,7 +8,7 @@
         </div>
         
         <div class='grid grid-cols-3 gap-4 mt-8'>
-            @forelse($prestasi as $item)
+            @forelse($prestasis as $item)
                 <x-berita-prestasi-card :prestasi="$item"/>
             @empty
                 <div class='col-span-3 text-center py-20'>
@@ -17,9 +17,9 @@
             @endforelse
         </div>
 
-        @if($prestasi->hasPages())
+        @if($prestasis->hasPages())
             <div class='mt-8'>
-                {{ $prestasi->links() }}
+                {{ $prestasis->links() }}
             </div>
         @endif
     </div>

@@ -7,11 +7,11 @@
         <div class='flex flex-col gap-4 items-center justify-center'>
             <div class='font-semibold text-4xl'>Profil Pengajar</div>
             <div class='text-lg'>Semua pengajar dalam SMA Negeri 100 Jakarta</div>
-            <div class='text-sm text-gray-600'>Total: {{ $guru->total() }} guru</div>
+            <div class='text-sm text-gray-600'>Total: {{ $gurus->total() }} guru</div>
         </div>
         
         <div class='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-8 px-4'>
-            @forelse($guru as $teacher)
+            @forelse($gurus as $teacher)
                 <div class='group relative h-72 w-64 bg-[#fffffb] rounded-lg shadow-lg overflow-hidden'>
                     @if($teacher->foto && file_exists(public_path('storage/' . $teacher->foto)))
                         <img src="{{ asset('storage/' . $teacher->foto) }}" 
@@ -25,7 +25,7 @@
                         </div>
                     @endif
                     
-                    <div class='absolute left-2 bottom-3 right-2 transition-transform duration-400 translate-y-6 group-hover:translate-y-0 bg-white bg-opacity-90 backdrop-blur-sm rounded-lg p-3'>
+                    <div class='absolute w-full bottom-3 transition-transform duration-400 translate-y-6 group-hover:translate-y-0 bg-white bg-opacity-90 backdrop-blur-sm rounded-lg p-3'>
                         <h3 class='text-lg font-semibold mt-2 truncate' title="{{ $teacher->nama_guru }}">
                             {{ $teacher->nama_guru }}
                         </h3>
@@ -47,28 +47,28 @@
         </div>
 
         <!-- Pagination -->
-        @if($guru->hasPages())
+        @if($gurus->hasPages())
             <div class="mt-8 flex justify-center">
                 <nav class="flex items-center space-x-2">
                     {{-- Previous Page Link --}}
-                    @if ($guru->onFirstPage())
+                    @if ($gurus->onFirstPage())
                         <span class="px-3 py-2 text-gray-400 cursor-not-allowed">← Previous</span>
                     @else
-                        <a href="{{ $guru->previousPageUrl() }}" class="px-3 py-2 text-blue-600 hover:text-blue-800">← Previous</a>
+                        <a href="{{ $gurus->previousPageUrl() }}" class="px-3 py-2 text-blue-600 hover:text-blue-800">← Previous</a>
                     @endif
 
                     {{-- Page Numbers --}}
-                    @for ($i = 1; $i <= $guru->lastPage(); $i++)
-                        @if ($i == $guru->currentPage())
+                    @for ($i = 1; $i <= $gurus->lastPage(); $i++)
+                        @if ($i == $gurus->currentPage())
                             <span class="px-3 py-2 bg-blue-600 text-white rounded">{{ $i }}</span>
                         @else
-                            <a href="{{ $guru->url($i) }}" class="px-3 py-2 text-blue-600 hover:text-blue-800 hover:bg-gray-100 rounded">{{ $i }}</a>
+                            <a href="{{ $gurus->url($i) }}" class="px-3 py-2 text-blue-600 hover:text-blue-800 hover:bg-gray-100 rounded">{{ $i }}</a>
                         @endif
                     @endfor
 
                     {{-- Next Page Link --}}
-                    @if ($guru->hasMorePages())
-                        <a href="{{ $guru->nextPageUrl() }}" class="px-3 py-2 text-blue-600 hover:text-blue-800">Next →</a>
+                    @if ($gurus->hasMorePages())
+                        <a href="{{ $gurus->nextPageUrl() }}" class="px-3 py-2 text-blue-600 hover:text-blue-800">Next →</a>
                     @else
                         <span class="px-3 py-2 text-gray-400 cursor-not-allowed">Next →</span>
                     @endif
