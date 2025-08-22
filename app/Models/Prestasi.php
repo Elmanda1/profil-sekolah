@@ -43,4 +43,11 @@ class Prestasi extends Model
     {
         return $query->orderBy('tanggal', 'desc')->limit($limit);
     }
+
+    public function home()
+    {
+        $prestasis = Prestasi::recent(3)->get(); // 3 terbaru
+        return view('home', compact('prestasis'));
+    }
+
 }

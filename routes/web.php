@@ -8,9 +8,8 @@ use App\Http\Controllers\KelasController;
 use App\Http\Controllers\JurusanController; 
 
 // Frontend Routes
-Route::get('/', function () {
-    return view('frontend.home');
-})->name('frontend.home');
+Route::get('/', [PrestasiController::class, 'home'])->name('frontend.home');
+
 
 Route::get('/profil-pengajar', [GuruController::class, 'profilPengajar'])
     ->name('frontend.profil-pengajar');

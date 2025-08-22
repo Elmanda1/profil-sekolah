@@ -1,41 +1,49 @@
 @php
     // Ambil 5 berita terbaru untuk ditampilkan di homepage
-    $latestBerita = \App\Models\Artikel::orderBy('tanggal', 'desc')->take(5)->get();
+    $latestArtikel = \App\Models\Artikel::orderBy('tanggal', 'desc')->take(5)->get();
 @endphp
 
 <div class='flex flex-col h-[70vh] w-full justify-start items-center pb-10 gap-12'>
     <div>
         <h1 class='font-semibold text-5xl'>Berita Sekolah</h1>
     </div>
-    <div class='flex w-full h-full'>
+    <div class='flex w-full h-full relative'>
         <div class='flex w-1/12 justify-center items-center'>
-            <button id='prevBtn' class='text-[5rem] text-gray-600 hover:text-gray-800 transition-colors'><</button>
+            <button id='prevBtn' class='text-[5rem] text-gray-600 hover:text-gray-800 transition-colors z-50 absolute left-3'><</button>
         </div>
-        <div id='beritaContainer' class='flex h-full w-full justify-start items-center gap-4 overflow-x-hidden'>
-            @forelse($latestBerita as $berita)
-                <div class='berita-card relative h-72 w-100 flex-shrink-0 bg-blue-900 rounded-lg flex flex-col justify-center items-center px-7 hover:-translate-y-2 hover:shadow-xl transition-all duration-300'>
-                    @if($berita->gambar && file_exists(public_path('storage/' . $berita->gambar)))
+        <div id='beritaContainer' class='flex h-full justify-start items-center gap-4 z-0 pl-20'>
+            @forelse($latestArtikel as $artikels)
+                <div class='relative berita-card  h-72 w-100 flex-shrink-0 border-3 border-green-600 rounded-lg flex flex-col justify-center items-center hover:-translate-y-2 hover:shadow-xl transition-all duration-300'>
+                    @if($artikels->gambar && file_exists(public_path('storage/' . $artikels->gambar)))
                         <div class='absolute inset-0 rounded-lg overflow-hidden'>
-                            <img src="{{ asset('storage/' . $berita->gambar) }}" 
-                                 alt="Gambar {{ $berita->judul_berita }}" 
+                            <img src="{{ asset('storage/' . $artikels->gambar) }}" 
+                                 alt="Gambar {{ $artikels->judul }}" 
                                  class='w-full h-full object-cover opacity-30'>
-                            <div class='absolute inset-0 bg-blue-900 bg-opacity-70'></div>
+                            <div class='absolute inset-0 bg-opacity-70'></div>
                         </div>
+                    @else
+                        <div class="w-full h-72 bg-gray-200 flex items-center justify-center rounded-lg">
+                            <svg class="w-20 h-20 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+                            </svg>
+                        </div>
+
                     @endif
                     
                     <div class='absolute -bottom-10 w-92 h-36 bg-[#fffffb] rounded-lg flex justify-center items-center p-4'>
                         <div class='text-center'>
                             <h1 class='uppercase font-semibold text-black text-sm line-clamp-3'>
-                                {{ $berita->judul_berita }}
+                                {{ $artikels->judul }}
                             </h1>
                             <p class='text-xs text-gray-600 mt-2'>
-                                {{ \Carbon\Carbon::parse($berita->tanggal_berita)->format('d M Y') }}
+                                {{ \Carbon\Carbon::parse($artikels->tanggal)->format('d M Y') }}
                             </p>
                         </div>
                     </div>
                     
                     <!-- Link to detail -->
-                    <a href="{{ route('frontend.berita.detail', $berita->id_artikel) }}" class='absolute inset-0 z-10'></a>
+                    <a href="{{ route('frontend.berita.detail', $artikels->id_artikel) }}" class='absolute inset-0 z-50'></a>
                 </div>
             @empty
                 <div class='flex justify-center items-center w-full h-full'>
@@ -44,7 +52,7 @@
             @endforelse
         </div>
         <div class='flex w-1/12 justify-center items-center'>
-            <button id='nextBtn' class='text-[5rem] text-gray-600 hover:text-gray-800 transition-colors'>></button>
+            <button id='nextBtn' class='text-[5rem] text-gray-600 hover:text-gray-800 transition-colors absolute right-3'>></button>
         </div>
     </div>
     <div class='hover:-translate-y-2 transition-all duration-300 hover:shadow-xl'>
@@ -61,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (cards.length > 0) {
         let currentIndex = 0;
-        const cardWidth = cards[0].offsetWidth + 16; // width + gap
+        const cardWidth = cards[0].offsetWidth; // width + gap
         
         prevBtn.addEventListener('click', function() {
             if (currentIndex > 0) {
@@ -71,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         nextBtn.addEventListener('click', function() {
-            if (currentIndex < cards.length - 3) { // Show 3 cards at once
+            if (currentIndex < cards.length - 4) { // Show 3 cards at once
                 currentIndex++;
                 container.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
             }

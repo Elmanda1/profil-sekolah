@@ -301,4 +301,11 @@ class PrestasiController extends Controller
 
         return response()->json($prestasis);
     }
+
+    public function home()
+    {
+        $highlightPrestasis = Prestasi::orderBy('tanggal', 'desc')->take(3)->get();
+        return view('frontend.home', compact('highlightPrestasis'));
+    }
+
 }
