@@ -15,6 +15,7 @@ return new class extends Migration
             $table->integer('id_mapel', true);
             $table->integer('id_sekolah')->index('id_sekolah');
             $table->string('nama_mapel');
+            $table->timestamps();
         });
     }
 

@@ -1,98 +1,239 @@
 <?php
-// app/Http/Controllers/ArtikelController.php
+
 namespace App\Http\Controllers;
 
 use App\Models\Artikel;
+use App\Models\Sekolah;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ArtikelController extends Controller
 {
-    public function index()
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
     {
-        $artikel = Artikel::with('sekolah')->latest()->paginate(10);
-        return view('admin.artikel.index', compact('artikel'));
+        $query = Artikel::with('sekolah');
+
+        // Filter by sekolah if provided
+        if ($request->has('sekolah_id') && $request->sekolah_id) {
+            $query->bySekolah($request->sekolah_id);
+        }
+
+        // Search functionality
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('judul', 'like', "%{$search}%")
+                  ->orWhere('isi', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by date range
+        if ($request->has('dari_tanggal') && $request->dari_tanggal) {
+            $query->where('tanggal', '>=', $request->dari_tanggal);
+        }
+        if ($request->has('sampai_tanggal') && $request->sampai_tanggal) {
+            $query->where('tanggal', '<=', $request->sampai_tanggal);
+        }
+
+        $artikels = $query->orderBy('tanggal', 'desc')->paginate(10);
+        $sekolahs = Sekolah::all();
+
+        return view('admin.artikel.index', compact('artikels', 'sekolahs'));
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create()
     {
-        return view('admin.artikel.create');
+        $sekolahs = Sekolah::all();
+        return view('admin.artikel.create', compact('sekolahs'));
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'id_sekolah' => 'required|exists:tb_sekolah,id_sekolah',
             'judul' => 'required|string|max:255',
             'isi' => 'required|string',
             'tanggal' => 'required|date',
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        if ($request->hasFile('gambar')) {
-            $validated['gambar'] = $request->file('gambar')->store('artikel', 'public');
+        try {
+            // Handle image upload
+            if ($request->hasFile('gambar')) {
+                $file = $request->file('gambar');
+                $filename = time() . '_' . Str::slug($request->judul) . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('photos'), $filename);
+                $validated['gambar'] = $filename;
+            }
+
+            Artikel::create($validated);
+
+            return redirect()->route('artikel.index')
+                           ->with('success', 'Artikel berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                           ->withInput()
+                           ->with('error', 'Gagal menambahkan artikel: ' . $e->getMessage());
         }
-
-        $validated['id_sekolah'] = 1; // Default sekolah ID
-
-        Artikel::create($validated);
-
-        return redirect()->route('admin.artikel.index')
-                        ->with('success', 'Artikel berhasil ditambahkan');
     }
 
+    /**
+     * Display the specified resource.
+     */
     public function show(Artikel $artikel)
     {
+        $artikel->load('sekolah');
         return view('admin.artikel.show', compact('artikel'));
     }
 
+    /**
+     * Show the form for editing the specified resource.
+     */
     public function edit(Artikel $artikel)
     {
-        return view('admin.artikel.edit', compact('artikel'));
+        $sekolahs = Sekolah::all();
+        return view('admin.artikel.edit', compact('artikel', 'sekolahs'));
     }
 
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request, Artikel $artikel)
     {
         $validated = $request->validate([
+            'id_sekolah' => 'required|exists:tb_sekolah,id_sekolah',
             'judul' => 'required|string|max:255',
             'isi' => 'required|string',
             'tanggal' => 'required|date',
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        if ($request->hasFile('gambar')) {
-            if ($artikel->gambar) {
-                Storage::disk('public')->delete($artikel->gambar);
+        try {
+            // Handle image upload
+            if ($request->hasFile('gambar')) {
+                // Delete old image if exists
+                if ($artikel->gambar && file_exists(public_path('photos/' . $artikel->gambar))) {
+                    unlink(public_path('photos/' . $artikel->gambar));
+                }
+
+                $file = $request->file('gambar');
+                $filename = time() . '_' . Str::slug($request->judul) . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('photos'), $filename);
+                $validated['gambar'] = $filename;
             }
-            $validated['gambar'] = $request->file('gambar')->store('artikel', 'public');
+
+            $artikel->update($validated);
+
+            return redirect()->route('artikel.index')
+                           ->with('success', 'Artikel berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                           ->withInput()
+                           ->with('error', 'Gagal memperbarui artikel: ' . $e->getMessage());
         }
-
-        $artikel->update($validated);
-
-        return redirect()->route('admin.artikel.index')
-                        ->with('success', 'Artikel berhasil diupdate');
     }
 
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy(Artikel $artikel)
     {
-        if ($artikel->gambar) {
-            Storage::disk('public')->delete($artikel->gambar);
+        try {
+            // Delete image file if exists
+            if ($artikel->gambar && file_exists(public_path('photos/' . $artikel->gambar))) {
+                unlink(public_path('photos/' . $artikel->gambar));
+            }
+
+            $artikel->delete();
+
+            return redirect()->route('artikel.index')
+                           ->with('success', 'Artikel berhasil dihapus.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                           ->with('error', 'Gagal menghapus artikel: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Get published articles for frontend
+     */
+    public function getPublished(Request $request)
+    {
+        $query = Artikel::published()->with('sekolah');
+
+        if ($request->has('sekolah_id') && $request->sekolah_id) {
+            $query->bySekolah($request->sekolah_id);
+        }
+
+        if ($request->has('limit')) {
+            $query->recent($request->limit);
+        }
+
+        return $query->get();
+    }
+
+    /**
+     * Get recent articles
+     */
+    public function getRecent($limit = 5)
+    {
+        return Artikel::published()
+                     ->with('sekolah')
+                     ->recent($limit)
+                     ->get();
+    }
+
+    /**
+     * Frontend article detail
+     */
+    public function detail($id)
+    {
+        $artikel = Artikel::with('sekolah')->findOrFail($id);
         
-        $artikel->delete();
+        // Get related articles
+        $relatedArticles = Artikel::published()
+                                 ->where('id_artikel', '!=', $id)
+                                 ->bySekolah($artikel->id_sekolah)
+                                 ->recent(3)
+                                 ->get();
 
-        return redirect()->route('admin.artikel.index')
-                        ->with('success', 'Artikel berhasil dihapus');
+        return view('frontend.berita-detail', compact('artikel', 'relatedArticles'));
     }
 
-    // Frontend methods
-    public function frontendIndex()
+    /**
+     * Frontend articles listing
+     */
+    public function berita(Request $request)
     {
-        $artikel = Artikel::latest()->paginate(9);
-        return view('frontend.artikel', compact('artikel'));
-    }
+        $query = Artikel::published()->with('sekolah');
 
-    public function frontendShow(Artikel $artikel)
-    {
-        return view('frontend.artikel-detail', compact('artikel'));
+        // Search functionality
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('judul', 'like', "%{$search}%")
+                  ->orWhere('isi', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by sekolah
+        if ($request->has('sekolah_id') && $request->sekolah_id) {
+            $query->bySekolah($request->sekolah_id);
+        }
+
+        $artikels = $query->orderBy('tanggal', 'desc')->paginate(9);
+        $sekolahs = Sekolah::all();
+
+        return view('frontend.berita', compact('artikels', 'sekolahs'));
     }
 }

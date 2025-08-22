@@ -1,40 +1,43 @@
 <?php
-// database/seeders/PrestasiSeeder.php
 namespace Database\Seeders;
 
-use App\Models\Prestasi;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Prestasi;
+use App\Models\Sekolah;
+use Faker\Factory as Faker;
 
 class PrestasiSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        $prestasi_data = [
-            [
-                'id_sekolah' => 1,
-                'judul' => 'Juara 1 Olimpiade Matematika Tingkat DKI Jakarta',
-                'deskripsi' => 'Siswa SMA Negeri 1 Jakarta berhasil meraih juara 1 dalam Olimpiade Matematika tingkat DKI Jakarta yang diselenggarakan oleh Dinas Pendidikan DKI Jakarta.',
-                'tanggal' => '2024-07-15',
-                'gambar' => 'lomba_matematika.jpg'
-            ],
-            [
-                'id_sekolah' => 1,
-                'judul' => 'Juara 2 Kompetisi Futsal Antar SMA',
-                'deskripsi' => 'Tim futsal SMA Negeri 1 Jakarta berhasil meraih juara 2 dalam kompetisi futsal antar SMA se-Jakarta Pusat.',
-                'tanggal' => '2024-07-20',
-                'gambar' => 'lomba_futsal.jpeg'
-            ],
-            [
-                'id_sekolah' => 1,
-                'judul' => 'Juara 3 Lomba Mancing Tingkat Nasional',
-                'deskripsi' => 'Ekstrakurikuler Pancing SMA Negeri 1 Jakarta meraih juara 3 dalam lomba mancing tingkat nasional yang diselenggarakan di Ancol.',
-                'tanggal' => '2024-06-25',
-                'gambar' => 'lomba_mancing.jpg'
-            ]
+        $faker = Faker::create('id_ID');
+        $sekolahList = Sekolah::all();
+        
+        $judulPrestasi = [
+            'Juara 1 Lomba Matematika Tingkat Kota',
+            'Juara 2 Olimpiade Fisika Nasional',
+            'Juara 3 Kompetisi Debat Bahasa Inggris',
+            'Juara 1 Festival Band Sekolah',
+            'Juara 2 Lomba Puisi Nasional',
+            'Juara 1 Kompetisi Robotika',
+            'Juara 3 Lomba Karya Tulis Ilmiah'
         ];
 
-        foreach ($prestasi_data as $prestasi) {
-            Prestasi::create($prestasi);
+        $counter = 0;
+        foreach ($sekolahList as $sekolah) {
+            
+            foreach ($judulPrestasi as $judul) {
+                Prestasi::create([
+                    'id_sekolah' => $sekolah->id_sekolah,
+                    'judul' => $judul,
+                    'deskripsi' => $faker->paragraph(),
+                    'tanggal' => $faker->dateTimeBetween('-1 year', 'now'),
+                ]);
+                $counter++;
+            }
         }
+
+        $this->command->info("✅ {$counter} Prestasi berhasil dibuat!");
     }
 }

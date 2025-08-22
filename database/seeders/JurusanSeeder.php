@@ -1,31 +1,39 @@
 <?php
-// database/seeders/JurusanSeeder.php
+
 namespace Database\Seeders;
 
-use App\Models\Jurusan;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Jurusan;
+use App\Models\Sekolah;
 
 class JurusanSeeder extends Seeder
 {
-    public function run()
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
     {
-        $jurusan = [
-            [
-                'id_sekolah' => 1,
-                'nama_jurusan' => 'IPA (Ilmu Pengetahuan Alam)'
-            ],
-            [
-                'id_sekolah' => 1,
-                'nama_jurusan' => 'IPS (Ilmu Pengetahuan Sosial)'
-            ],
-            [
-                'id_sekolah' => 1,
-                'nama_jurusan' => 'Bahasa'
-            ]
+        $sekolahList = Sekolah::all();
+        
+        $jurusanData = [
+            'MIPA',
+            'IPS', 
+            'Bahasa'
         ];
 
-        foreach ($jurusan as $data) {
-            Jurusan::create($data);
+        foreach ($sekolahList as $sekolah) {
+            foreach ($jurusanData as $namaJurusan) {
+                Jurusan::create([
+                    'id_sekolah' => $sekolah->id_sekolah,
+                    'nama_jurusan' => $namaJurusan,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
         }
+
+        $totalJurusan = count($sekolahList) * count($jurusanData);
+        $this->command->info("✅ {$totalJurusan} Jurusan berhasil dibuat!");
     }
 }

@@ -1,22 +1,28 @@
 <?php
-// database/seeders/JenisKelasSeeder.php
+
 namespace Database\Seeders;
 
-use App\Models\JenisKelas;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\JenisKelas;
 
 class JenisKelasSeeder extends Seeder
 {
-    public function run()
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
     {
-        $jenis_kelas = [
-            ['nama_jenis_kelas' => 'Kelas X'],
-            ['nama_jenis_kelas' => 'Kelas XI'],
-            ['nama_jenis_kelas' => 'Kelas XII'],
+        $jenisKelasData = [
+            ['nama_jenis_kelas' => 'X'],
+            ['nama_jenis_kelas' => 'XI'],  
+            ['nama_jenis_kelas' => 'XII'],
         ];
 
-        foreach ($jenis_kelas as $jenis) {
-            JenisKelas::create($jenis);
+        foreach ($jenisKelasData as $data) {
+            JenisKelas::create($data);
         }
+
+        $this->command->info('✅ 3 Jenis Kelas berhasil dibuat!');
     }
 }

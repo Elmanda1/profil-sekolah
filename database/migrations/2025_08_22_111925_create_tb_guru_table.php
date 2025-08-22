@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('no_telp', 50)->nullable();
             $table->string('alamat')->nullable();
             $table->string('foto')->nullable();
+            $table->timestamps(); 
         });
     }
 

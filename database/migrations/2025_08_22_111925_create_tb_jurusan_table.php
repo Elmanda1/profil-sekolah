@@ -15,6 +15,7 @@ return new class extends Migration
             $table->integer('id_jurusan', true);
             $table->integer('id_sekolah')->index('id_sekolah');
             $table->string('nama_jurusan');
+            $table->timestamps(); 
         });
     }
 

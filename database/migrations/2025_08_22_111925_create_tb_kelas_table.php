@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('id_jenis_kelas')->nullable()->index('id_jenis_kelas');
             $table->string('nama_kelas');
             $table->integer('wali_kelas')->nullable()->index('wali_kelas');
+            $table->timestamps();
         });
     }
 

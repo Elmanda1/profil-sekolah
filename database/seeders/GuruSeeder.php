@@ -1,59 +1,47 @@
 <?php
-// database/seeders/GuruSeeder.php
+
 namespace Database\Seeders;
 
-use App\Models\Guru;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Guru;
+use App\Models\Sekolah;
+use Faker\Factory as Faker;
 
 class GuruSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        $guru_data = [
-            [
-                'id_sekolah' => 1,
-                'nama_guru' => 'Dr. Ahmad Wijaya, S.Pd., M.Pd.',
-                'jenis_kelamin' => 'L',
-                'email' => 'ahmad.wijaya@sma1jakarta.sch.id',
-                'no_telp' => '08123456789',
-                'alamat' => 'Jl. Guru No. 1, Jakarta',
-            ],
-            [
-                'id_sekolah' => 1,
-                'nama_guru' => 'Siti Nurhaliza, S.Pd., M.Si.',
-                'jenis_kelamin' => 'P',
-                'email' => 'siti.nurhaliza@sma1jakarta.sch.id',
-                'no_telp' => '08123456790',
-                'alamat' => 'Jl. Guru No. 2, Jakarta',
-            ],
-            [
-                'id_sekolah' => 1,
-                'nama_guru' => 'Budi Santoso, S.Pd.',
-                'jenis_kelamin' => 'L',
-                'email' => 'budi.santoso@sma1jakarta.sch.id',
-                'no_telp' => '08123456791',
-                'alamat' => 'Jl. Guru No. 3, Jakarta',
-            ],
-            [
-                'id_sekolah' => 1,
-                'nama_guru' => 'Maya Sari, S.Pd., M.Pd.',
-                'jenis_kelamin' => 'P',
-                'email' => 'maya.sari@sma1jakarta.sch.id',
-                'no_telp' => '08123456792',
-                'alamat' => 'Jl. Guru No. 4, Jakarta',
-            ],
-            [
-                'id_sekolah' => 1,
-                'nama_guru' => 'Drs. Hendro Prasetyo',
-                'jenis_kelamin' => 'L',
-                'email' => 'hendro.prasetyo@sma1jakarta.sch.id',
-                'no_telp' => '08123456793',
-                'alamat' => 'Jl. Guru No. 5, Jakarta',
-            ]
-        ];
-
-        foreach ($guru_data as $guru) {
-            Guru::create($guru);
+        $faker = Faker::create('id_ID');
+        $sekolahList = Sekolah::all();
+        
+        $counter = 0;
+        
+        foreach ($sekolahList as $sekolah) {
+            // Setiap sekolah minimal 12 guru
+            for ($i = 0; $i < 12; $i++) {
+                $counter++;
+                
+                // Generate nama random dengan faker
+                $isPria = $faker->boolean(50);
+                $gelar = $faker->randomElement(['Drs.', 'Dr.', 'Dra.']);
+                $pendidikan = $faker->randomElement(['M.Pd', 'S.Pd', 'M.Si']);
+                $nama = ($isPria ? $faker->firstNameMale : $faker->firstNameFemale) . ' ' . $faker->lastName;
+                $namaGuru = $gelar . ' ' . $nama . ', ' . $pendidikan;
+                
+                Guru::create([
+                    'id_sekolah' => $sekolah->id_sekolah,
+                    'nama_guru' => $namaGuru,
+                    'email' => 'guru' . $counter . '@school.edu', // Email unik dengan counter
+                    'no_telp' => $faker->phoneNumber,
+                    'alamat' => $faker->address,
+                    'foto' => $faker->randomElement(['hero.jpg', 'icon.png', null]),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
         }
+
+        $this->command->info("✅ {$counter} Guru berhasil dibuat!");
     }
 }

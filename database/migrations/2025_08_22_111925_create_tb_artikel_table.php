@@ -18,6 +18,7 @@ return new class extends Migration
             $table->text('isi')->nullable();
             $table->date('tanggal')->nullable();
             $table->string('gambar')->nullable();
+            $table->timestamps();
         });
     }
 
