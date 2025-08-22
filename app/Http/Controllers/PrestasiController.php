@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Prestasi;
-use App\Models\Siswa;
 use App\Models\Sekolah;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -15,7 +14,7 @@ class PrestasiController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Prestasi::with(['siswa', 'sekolah']);
+        $query = Prestasi::with([ 'sekolah']);
 
         // Filter by sekolah
         if ($request->has('sekolah_id') && $request->sekolah_id) {
@@ -45,11 +44,7 @@ class PrestasiController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nama_lomba', 'like', "%{$search}%")
-                  ->orWhere('deskripsi', 'like', "%{$search}%")
-                  ->orWhereHas('siswa', function($siswaQuery) use ($search) {
-                      $siswaQuery->where('nama_siswa', 'like', "%{$search}%")
-                                 ->orWhere('nisn', 'like', "%{$search}%");
-                  });
+                  ->orWhere('deskripsi', 'like', "%{$search}%");
             });
         }
 
@@ -69,11 +64,10 @@ class PrestasiController extends Controller
     public function create()
     {
         $sekolahs = Sekolah::all();
-        $siswas = Siswa::all();
         $tingkats = ['Sekolah', 'Kabupaten/Kota', 'Provinsi', 'Nasional', 'Internasional'];
         $peringkats = ['Juara 1', 'Juara 2', 'Juara 3', 'Harapan 1', 'Harapan 2', 'Harapan 3', 'Finalis', 'Peserta'];
 
-        return view('admin.prestasi.create', compact('sekolahs', 'siswas', 'tingkats', 'peringkats'));
+        return view('admin.prestasi.create', compact('sekolahs', 'tingkats', 'peringkats'));
     }
 
     /**
@@ -83,7 +77,6 @@ class PrestasiController extends Controller
     {
         $validated = $request->validate([
             'id_sekolah' => 'required|exists:tb_sekolah,id_sekolah',
-            'id_siswa' => 'required|exists:tb_siswa,id_siswa',
             'nama_lomba' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
             'tanggal' => 'required|date',
@@ -117,7 +110,7 @@ class PrestasiController extends Controller
      */
     public function show(Prestasi $prestasi)
     {
-        $prestasi->load(['siswa', 'sekolah']);
+        $prestasi->load(['sekolah']);
         return view('admin.prestasi.show', compact('prestasi'));
     }
 
@@ -127,11 +120,10 @@ class PrestasiController extends Controller
     public function edit(Prestasi $prestasi)
     {
         $sekolahs = Sekolah::all();
-        $siswas = Siswa::all();
         $tingkats = ['Sekolah', 'Kabupaten/Kota', 'Provinsi', 'Nasional', 'Internasional'];
         $peringkats = ['Juara 1', 'Juara 2', 'Juara 3', 'Harapan 1', 'Harapan 2', 'Harapan 3', 'Finalis', 'Peserta'];
 
-        return view('admin.prestasi.edit', compact('prestasi', 'sekolahs', 'siswas', 'tingkats', 'peringkats'));
+        return view('admin.prestasi.edit', compact('prestasi', 'sekolahs', 'tingkats', 'peringkats'));
     }
 
     /**
@@ -141,7 +133,6 @@ class PrestasiController extends Controller
     {
         $validated = $request->validate([
             'id_sekolah' => 'required|exists:tb_sekolah,id_sekolah',
-            'id_siswa' => 'required|exists:tb_siswa,id_siswa',
             'nama_lomba' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
             'tanggal' => 'required|date',
@@ -201,7 +192,7 @@ class PrestasiController extends Controller
      */
     public function prestasi(Request $request)
     {
-        $query = Prestasi::with(['siswa', 'sekolah']);
+        $query = Prestasi::with(['sekolah']);
 
         // Filter by sekolah
         if ($request->has('sekolah_id') && $request->sekolah_id) {
@@ -229,9 +220,7 @@ class PrestasiController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('nama_lomba', 'like', "%{$search}%")
                   ->orWhere('deskripsi', 'like', "%{$search}%")
-                  ->orWhereHas('siswa', function($siswaQuery) use ($search) {
-                      $siswaQuery->where('nama_siswa', 'like', "%{$search}%");
-                  });
+                  ;
             });
         }
 
@@ -256,7 +245,7 @@ class PrestasiController extends Controller
      */
     public function getRecent($limit = 6)
     {
-        return Prestasi::with(['siswa', 'sekolah'])
+        return Prestasi::with(['sekolah'])
                       ->orderBy('tanggal', 'desc')
                       ->limit($limit)
                       ->get();
@@ -267,7 +256,7 @@ class PrestasiController extends Controller
      */
     public function getHighlighted($limit = 3)
     {
-        return Prestasi::with(['siswa', 'sekolah'])
+        return Prestasi::with(['sekolah'])
                       ->whereIn('tingkat', ['Nasional', 'Internasional'])
                       ->whereIn('peringkat', ['Juara 1', 'Juara 2', 'Juara 3'])
                       ->orderBy('tanggal', 'desc')
@@ -302,25 +291,11 @@ class PrestasiController extends Controller
     }
 
     /**
-     * Get prestasi by siswa for API/AJAX
-     */
-    public function getBySiswa($idSiswa)
-    {
-        $prestasis = Prestasi::where('id_siswa', $idSiswa)
-                            ->with('sekolah')
-                            ->orderBy('tanggal', 'desc')
-                            ->get();
-
-        return response()->json($prestasis);
-    }
-
-    /**
      * Get prestasi by sekolah for API/AJAX
      */
     public function getBySekolah($idSekolah)
     {
         $prestasis = Prestasi::where('id_sekolah', $idSekolah)
-                            ->with('siswa')
                             ->orderBy('tanggal', 'desc')
                             ->get();
 

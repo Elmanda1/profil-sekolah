@@ -137,7 +137,6 @@ class SiswaController extends Controller
             'akun',
             'kelas.jurusan',
             'kelas.jenisKelas',
-            'prestasi',
             'krs.mapel'
         ]);
         
@@ -367,7 +366,7 @@ class SiswaController extends Controller
      */
     public function profilSiswa(Request $request)
     {
-        $query = Siswa::withPrestasi()->with(['sekolah', 'kelas.jurusan', 'kelas.jenisKelas']);
+        $query = Siswa::query();
 
         // Filter by sekolah
         if ($request->has('sekolah_id') && $request->sekolah_id) {

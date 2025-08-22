@@ -7,11 +7,11 @@
         <div class='flex flex-col gap-4 items-center justify-center'>
             <div class='font-semibold text-4xl'>Profil Siswa</div>
             <div class='text-lg'>Semua siswa dalam SMA Negeri 100 Jakarta</div>
-            <div class='text-sm text-gray-600'>Total: {{ $siswa->total() }} siswa</div>
+            <div class='text-sm text-gray-600'>Total: {{ $siswas->total() }} siswa</div>
         </div>
         
         <div class='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-8 px-4'>
-            @forelse($siswa as $student)
+            @forelse($siswas as $student)
                 <div class='group relative h-72 w-64 bg-[#fffffb] rounded-lg shadow-lg overflow-hidden'>
                     @if($student->foto && file_exists(public_path('storage/' . $student->foto)))
                         <img src="{{ asset('storage/' . $student->foto) }}" 
@@ -25,11 +25,11 @@
                         </div>
                     @endif
                     
-                    <div class='absolute left-2 bottom-3 right-2 transition-transform duration-400 translate-y-6 group-hover:translate-y-0 bg-white bg-opacity-90 backdrop-blur-sm rounded-lg p-3'>
+                    <div class='absolute w-full bottom-3  transition-transform duration-400 translate-y-6 group-hover:translate-y-0 bg-white bg-opacity-90 backdrop-blur-sm rounded-lg p-3'>
                         <h3 class='text-lg font-semibold mt-2 truncate' title="{{ $student->nama_siswa }}">
                             {{ $student->nama_siswa }}
                         </h3>
-                        <p class='text-gray-600'>NIS: {{ $student->nis }}</p>
+                        <p class='text-gray-600'>NIS: {{ $student->nisn }}</p>
                         @if($student->jenis_kelamin)
                             <p class='text-gray-500'>{{ $student->jenis_kelamin == 'L' ? 'Laki-laki' : 'Perempuan' }}</p>
                         @endif
@@ -46,28 +46,28 @@
         </div>
 
         <!-- Pagination -->
-        @if($siswa->hasPages())
+        @if($siswas->hasPages())
             <div class="mt-8 flex justify-center">
                 <nav class="flex items-center space-x-2">
                     {{-- Previous Page Link --}}
-                    @if ($siswa->onFirstPage())
+                    @if ($siswas->onFirstPage())
                         <span class="px-3 py-2 text-gray-400 cursor-not-allowed">← Previous</span>
                     @else
-                        <a href="{{ $siswa->previousPageUrl() }}" class="px-3 py-2 text-blue-600 hover:text-blue-800">← Previous</a>
+                        <a href="{{ $siswas->previousPageUrl() }}" class="px-3 py-2 text-blue-600 hover:text-blue-800">← Previous</a>
                     @endif
 
                     {{-- Page Numbers --}}
-                    @for ($i = 1; $i <= $siswa->lastPage(); $i++)
-                        @if ($i == $siswa->currentPage())
+                    @for ($i = 1; $i <= $siswas->lastPage(); $i++)
+                        @if ($i == $siswas->currentPage())
                             <span class="px-3 py-2 bg-blue-600 text-white rounded">{{ $i }}</span>
                         @else
-                            <a href="{{ $siswa->url($i) }}" class="px-3 py-2 text-blue-600 hover:text-blue-800 hover:bg-gray-100 rounded">{{ $i }}</a>
+                            <a href="{{ $siswas->url($i) }}" class="px-3 py-2 text-blue-600 hover:text-blue-800 hover:bg-gray-100 rounded">{{ $i }}</a>
                         @endif
                     @endfor
 
                     {{-- Next Page Link --}}
-                    @if ($siswa->hasMorePages())
-                        <a href="{{ $siswa->nextPageUrl() }}" class="px-3 py-2 text-blue-600 hover:text-blue-800">Next →</a>
+                    @if ($siswas->hasMorePages())
+                        <a href="{{ $siswas->nextPageUrl() }}" class="px-3 py-2 text-blue-600 hover:text-blue-800">Next →</a>
                     @else
                         <span class="px-3 py-2 text-gray-400 cursor-not-allowed">Next →</span>
                     @endif

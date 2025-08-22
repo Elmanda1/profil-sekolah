@@ -11,7 +11,7 @@
         @endif
         
         <div class='flex flex-col gap-3'>
-            <h3 class='text-2xl font-semibold mt-2'>{{ $prestasi->nama_prestasi }}</h3>
+            <h3 class='text-2xl font-semibold mt-2'>{{ $prestasi->judul }}</h3>
             
             @if($prestasi->siswa)
                 <p class='text-gray-600'>Siswa: {{ $prestasi->siswa->nama_siswa }}</p>

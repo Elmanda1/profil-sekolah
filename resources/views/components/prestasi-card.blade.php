@@ -12,12 +12,17 @@
     </div>    
     
     <div class='w-full h-full flex flex-col justify-center items-start gap-2 pl-4'>
-        <h1 class='font-semibold text-lg text-gray-900'>{{ $prestasi->nama_prestasi }}</h1>
+        <h1 class='font-semibold text-lg text-gray-900'>{{ $prestasi->judul }}</h1>
         
         @if($prestasi->siswa)
             <p class='text-gray-600 text-sm'>{{ $prestasi->siswa->nama_siswa }}</p>
         @endif
-        
+
+        @if($prestasi->deskripsi)
+            <p class='text-gray-600 text-sm line-clamp-3'>{{ $prestasi->deskripsi }}</p>
+        @endif
+
+
         @if($prestasi->tahun)
             <p class='flex gap-2 text-black'><span>📅</span>{{ $prestasi->tahun }}</p>
         @endif
