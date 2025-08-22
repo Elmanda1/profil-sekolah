@@ -1,15 +1,17 @@
 <?php
-// app/Models/Sekolah.php
+
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Sekolah extends Model
 {
+    use HasFactory;
+
     protected $table = 'tb_sekolah';
     protected $primaryKey = 'id_sekolah';
-    
+
     protected $fillable = [
         'nama_sekolah',
         'alamat',
@@ -18,28 +20,57 @@ class Sekolah extends Model
         'website'
     ];
 
-    public function guru(): HasMany
+    // Relationships
+    public function jurusan()
+    {
+        return $this->hasMany(Jurusan::class, 'id_sekolah', 'id_sekolah');
+    }
+
+    public function guru()
     {
         return $this->hasMany(Guru::class, 'id_sekolah', 'id_sekolah');
     }
 
-    public function siswa(): HasMany
+    public function siswa()
     {
         return $this->hasMany(Siswa::class, 'id_sekolah', 'id_sekolah');
     }
 
-    public function artikel(): HasMany
+    public function kelas()
+    {
+        return $this->hasMany(Kelas::class, 'id_sekolah', 'id_sekolah');
+    }
+
+    public function artikel()
     {
         return $this->hasMany(Artikel::class, 'id_sekolah', 'id_sekolah');
     }
 
-    public function prestasi(): HasMany
+    public function prestasi()
     {
         return $this->hasMany(Prestasi::class, 'id_sekolah', 'id_sekolah');
     }
 
-    public function jurusan(): HasMany
+    public function mapel()
     {
-        return $this->hasMany(Jurusan::class, 'id_sekolah', 'id_sekolah');
+        return $this->hasMany(Mapel::class, 'id_sekolah', 'id_sekolah');
+    }
+
+    public function galeri()
+    {
+        return $this->hasMany(Galeri::class, 'id_sekolah', 'id_sekolah');
+    }
+
+    // Scopes
+    public function scopeWithCounts($query)
+    {
+        return $query->withCount([
+            'guru',
+            'siswa', 
+            'kelas',
+            'jurusan',
+            'artikel',
+            'prestasi'
+        ]);
     }
 }
