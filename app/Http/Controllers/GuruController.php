@@ -7,7 +7,10 @@ use App\Models\Sekolah;
 use App\Models\Akun;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class GuruController extends Controller
 {
@@ -16,25 +19,35 @@ class GuruController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Guru::with(['sekolah', 'akun', 'mapel']);
+        $query = Guru::with(['sekolah', 'akun']);
 
         // Filter by sekolah
-        if ($request->has('sekolah_id') && $request->sekolah_id) {
+        if ($request->filled('sekolah_id')) {
             $query->bySekolah($request->sekolah_id);
         }
 
         // Search functionality
-        if ($request->has('search') && $request->search) {
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nama_guru', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('nip', 'like', "%{$search}%")
                   ->orWhere('no_telp', 'like', "%{$search}%");
             });
         }
 
-        $gurus = $query->orderBy('nama_guru')->paginate(10);
-        $sekolahs = Sekolah::all();
+        // Sorting
+        $sortBy = $request->get('sort_by', 'nama_guru');
+        $sortDirection = $request->get('sort_direction', 'asc');
+        
+        $allowedSorts = ['nama_guru', 'email', 'created_at', 'nip'];
+        if (in_array($sortBy, $allowedSorts)) {
+            $query->orderBy($sortBy, $sortDirection);
+        }
+
+        $gurus = $query->paginate(15)->withQueryString();
+        $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
 
         return view('admin.guru.index', compact('gurus', 'sekolahs'));
     }
@@ -44,7 +57,7 @@ class GuruController extends Controller
      */
     public function create()
     {
-        $sekolahs = Sekolah::all();
+        $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
         return view('admin.guru.create', compact('sekolahs'));
     }
 
@@ -56,21 +69,26 @@ class GuruController extends Controller
         $validated = $request->validate([
             'id_sekolah' => 'required|exists:tb_sekolah,id_sekolah',
             'nama_guru' => 'required|string|max:255',
-            'email' => 'required|email|unique:tb_guru,email',
-            'no_telp' => 'required|string|max:20',
-            'alamat' => 'required|string',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'nip' => 'nullable|string|max:20|unique:tb_guru,nip',
+            'email' => 'required|email|max:255|unique:tb_guru,email',
+            'no_telp' => 'nullable|string|max:20',
+            'alamat' => 'nullable|string|max:1000',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'create_account' => 'boolean',
-            'username' => 'required_if:create_account,1|string|unique:tb_akun,username',
-            'password' => 'required_if:create_account,1|string|min:8'
+            'username' => 'required_if:create_account,true|string|min:3|max:50|unique:tb_akun,username',
+            'password' => 'required_if:create_account,true|string|min:8|confirmed'
         ]);
+
+        DB::beginTransaction();
 
         try {
             // Handle photo upload
             if ($request->hasFile('foto')) {
                 $file = $request->file('foto');
                 $filename = time() . '_' . Str::slug($request->nama_guru) . '.' . $file->getClientOriginalExtension();
-                $file->move(public_path('photos'), $filename);
+                
+                // Store in storage/app/public/photos
+                $file->storeAs('photos', $filename, 'public');
                 $validated['foto'] = $filename;
             }
 
@@ -78,7 +96,7 @@ class GuruController extends Controller
             $guru = Guru::create($validated);
 
             // Create account if requested
-            if ($request->create_account) {
+            if ($request->boolean('create_account')) {
                 Akun::create([
                     'username' => $request->username,
                     'password' => Hash::make($request->password),
@@ -88,9 +106,19 @@ class GuruController extends Controller
                 ]);
             }
 
+            DB::commit();
+
             return redirect()->route('guru.index')
                            ->with('success', 'Guru berhasil ditambahkan.');
+                           
         } catch (\Exception $e) {
+            DB::rollback();
+            
+            // Delete uploaded file if exists
+            if (isset($validated['foto'])) {
+                Storage::disk('public')->delete('photos/' . $validated['foto']);
+            }
+
             return redirect()->back()
                            ->withInput()
                            ->with('error', 'Gagal menambahkan guru: ' . $e->getMessage());
@@ -112,7 +140,7 @@ class GuruController extends Controller
      */
     public function edit(Guru $guru)
     {
-        $sekolahs = Sekolah::all();
+        $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
         $guru->load('akun');
         
         return view('admin.guru.edit', compact('guru', 'sekolahs'));
@@ -126,31 +154,48 @@ class GuruController extends Controller
         $validated = $request->validate([
             'id_sekolah' => 'required|exists:tb_sekolah,id_sekolah',
             'nama_guru' => 'required|string|max:255',
-            'email' => 'required|email|unique:tb_guru,email,' . $guru->id_guru . ',id_guru',
-            'no_telp' => 'required|string|max:20',
-            'alamat' => 'required|string',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
+            'nip' => ['nullable', 'string', 'max:20', Rule::unique('tb_guru', 'nip')->ignore($guru->id_guru, 'id_guru')],
+            'email' => ['required', 'email', 'max:255', Rule::unique('tb_guru', 'email')->ignore($guru->id_guru, 'id_guru')],
+            'no_telp' => 'nullable|string|max:20',
+            'alamat' => 'nullable|string|max:1000',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048'
         ]);
 
+        DB::beginTransaction();
+
         try {
+            $oldFoto = $guru->foto;
+
             // Handle photo upload
             if ($request->hasFile('foto')) {
-                // Delete old photo if exists
-                if ($guru->foto && file_exists(public_path('photos/' . $guru->foto))) {
-                    unlink(public_path('photos/' . $guru->foto));
-                }
-
                 $file = $request->file('foto');
                 $filename = time() . '_' . Str::slug($request->nama_guru) . '.' . $file->getClientOriginalExtension();
-                $file->move(public_path('photos'), $filename);
+                
+                // Store new photo
+                $file->storeAs('photos', $filename, 'public');
                 $validated['foto'] = $filename;
+                
+                // Delete old photo
+                if ($oldFoto) {
+                    Storage::disk('public')->delete('photos/' . $oldFoto);
+                }
             }
 
             $guru->update($validated);
 
+            DB::commit();
+
             return redirect()->route('guru.index')
                            ->with('success', 'Data guru berhasil diperbarui.');
+                           
         } catch (\Exception $e) {
+            DB::rollback();
+            
+            // Delete new uploaded file if exists
+            if (isset($validated['foto'])) {
+                Storage::disk('public')->delete('photos/' . $validated['foto']);
+            }
+
             return redirect()->back()
                            ->withInput()
                            ->with('error', 'Gagal memperbarui data guru: ' . $e->getMessage());
@@ -162,22 +207,33 @@ class GuruController extends Controller
      */
     public function destroy(Guru $guru)
     {
+        DB::beginTransaction();
+
         try {
+            // Store foto name before deletion
+            $fotoName = $guru->foto;
+
             // Delete associated account
             if ($guru->akun) {
                 $guru->akun->delete();
             }
 
+            // Delete guru record
+            $guru->delete();
+
             // Delete photo file if exists
-            if ($guru->foto && file_exists(public_path('photos/' . $guru->foto))) {
-                unlink(public_path('photos/' . $guru->foto));
+            if ($fotoName) {
+                Storage::disk('public')->delete('photos/' . $fotoName);
             }
 
-            $guru->delete();
+            DB::commit();
 
             return redirect()->route('guru.index')
                            ->with('success', 'Guru berhasil dihapus.');
+                           
         } catch (\Exception $e) {
+            DB::rollback();
+
             return redirect()->back()
                            ->with('error', 'Gagal menghapus guru: ' . $e->getMessage());
         }
@@ -188,21 +244,21 @@ class GuruController extends Controller
      */
     public function createAccount(Request $request, Guru $guru)
     {
+        // Check if account already exists
+        if ($guru->akun) {
+            return redirect()->back()
+                           ->with('error', 'Guru sudah memiliki akun.');
+        }
+
         $validated = $request->validate([
-            'username' => 'required|string|unique:tb_akun,username',
-            'password' => 'required|string|min:8'
+            'username' => 'required|string|min:3|max:50|unique:tb_akun,username',
+            'password' => 'required|string|min:8|confirmed'
         ]);
 
         try {
-            // Check if account already exists
-            if ($guru->akun) {
-                return redirect()->back()
-                               ->with('error', 'Guru sudah memiliki akun.');
-            }
-
             Akun::create([
-                'username' => $request->username,
-                'password' => Hash::make($request->password),
+                'username' => $validated['username'],
+                'password' => Hash::make($validated['password']),
                 'role' => 'guru',
                 'id_guru' => $guru->id_guru,
                 'id_siswa' => null
@@ -210,8 +266,10 @@ class GuruController extends Controller
 
             return redirect()->route('guru.show', $guru)
                            ->with('success', 'Akun guru berhasil dibuat.');
+                           
         } catch (\Exception $e) {
             return redirect()->back()
+                           ->withInput()
                            ->with('error', 'Gagal membuat akun: ' . $e->getMessage());
         }
     }
@@ -221,32 +279,54 @@ class GuruController extends Controller
      */
     public function updateAccount(Request $request, Guru $guru)
     {
+        if (!$guru->akun) {
+            return redirect()->back()
+                           ->with('error', 'Guru tidak memiliki akun.');
+        }
+
         $validated = $request->validate([
-            'username' => 'required|string|unique:tb_akun,username,' . $guru->akun->id_akun . ',id_akun',
-            'password' => 'nullable|string|min:8'
+            'username' => ['required', 'string', 'min:3', 'max:50', Rule::unique('tb_akun', 'username')->ignore($guru->akun->id_akun, 'id_akun')],
+            'password' => 'nullable|string|min:8|confirmed'
         ]);
 
         try {
-            $akun = $guru->akun;
+            $updateData = ['username' => $validated['username']];
             
-            if (!$akun) {
-                return redirect()->back()
-                               ->with('error', 'Guru tidak memiliki akun.');
+            if ($request->filled('password')) {
+                $updateData['password'] = Hash::make($validated['password']);
             }
 
-            $updateData = ['username' => $request->username];
-            
-            if ($request->password) {
-                $updateData['password'] = Hash::make($request->password);
-            }
-
-            $akun->update($updateData);
+            $guru->akun->update($updateData);
 
             return redirect()->route('guru.show', $guru)
                            ->with('success', 'Akun guru berhasil diperbarui.');
+                           
         } catch (\Exception $e) {
             return redirect()->back()
+                           ->withInput()
                            ->with('error', 'Gagal memperbarui akun: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Delete account for guru
+     */
+    public function deleteAccount(Guru $guru)
+    {
+        if (!$guru->akun) {
+            return redirect()->back()
+                           ->with('error', 'Guru tidak memiliki akun.');
+        }
+
+        try {
+            $guru->akun->delete();
+
+            return redirect()->route('guru.show', $guru)
+                           ->with('success', 'Akun guru berhasil dihapus.');
+                           
+        } catch (\Exception $e) {
+            return redirect()->back()
+                           ->with('error', 'Gagal menghapus akun: ' . $e->getMessage());
         }
     }
 
@@ -255,15 +335,15 @@ class GuruController extends Controller
      */
     public function profilPengajar(Request $request)
     {
-        $query = Guru::withMapel()->with('sekolah');
+        $query = Guru::with(['sekolah', 'mapel']);
 
         // Filter by sekolah
-        if ($request->has('sekolah_id') && $request->sekolah_id) {
+        if ($request->filled('sekolah_id')) {
             $query->bySekolah($request->sekolah_id);
         }
 
         // Search functionality
-        if ($request->has('search') && $request->search) {
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nama_guru', 'like', "%{$search}%")
@@ -273,8 +353,11 @@ class GuruController extends Controller
             });
         }
 
-        $gurus = $query->orderBy('nama_guru')->paginate(12);
-        $sekolahs = Sekolah::all();
+        $gurus = $query->orderBy('nama_guru')
+                      ->paginate(12)
+                      ->withQueryString();
+                      
+        $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
 
         return view('frontend.profilPengajar', compact('gurus', 'sekolahs'));
     }
@@ -284,11 +367,81 @@ class GuruController extends Controller
      */
     public function getBySekolah($idSekolah)
     {
-        $gurus = Guru::bySekolah($idSekolah)
-                     ->select('id_guru', 'nama_guru')
-                     ->orderBy('nama_guru')
-                     ->get();
+        try {
+            // Validate sekolah exists
+            if (!Sekolah::where('id_sekolah', $idSekolah)->exists()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sekolah tidak ditemukan'
+                ], 404);
+            }
 
-        return response()->json($gurus);
+            $gurus = Guru::bySekolah($idSekolah)
+                         ->select('id_guru', 'nama_guru', 'email', 'no_telp')
+                         ->orderBy('nama_guru')
+                         ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $gurus
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data guru'
+            ], 500);
+        }
+    }
+
+    /**
+     * Bulk actions for multiple gurus
+     */
+    public function bulkAction(Request $request)
+    {
+        $validated = $request->validate([
+            'action' => 'required|in:delete,activate,deactivate',
+            'guru_ids' => 'required|array',
+            'guru_ids.*' => 'exists:tb_guru,id_guru'
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $count = 0;
+            
+            switch ($validated['action']) {
+                case 'delete':
+                    $gurus = Guru::whereIn('id_guru', $validated['guru_ids'])->get();
+                    foreach ($gurus as $guru) {
+                        // Delete associated account and photo
+                        if ($guru->akun) {
+                            $guru->akun->delete();
+                        }
+                        if ($guru->foto) {
+                            Storage::disk('public')->delete('photos/' . $guru->foto);
+                        }
+                        $guru->delete();
+                        $count++;
+                    }
+                    $message = "{$count} guru berhasil dihapus.";
+                    break;
+                    
+                default:
+                    return redirect()->back()
+                                   ->with('error', 'Aksi tidak valid.');
+            }
+
+            DB::commit();
+
+            return redirect()->route('guru.index')
+                           ->with('success', $message);
+                           
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            return redirect()->back()
+                           ->with('error', 'Gagal melakukan aksi: ' . $e->getMessage());
+        }
     }
 }

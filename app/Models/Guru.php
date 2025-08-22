@@ -15,10 +15,16 @@ class Guru extends Model
     protected $fillable = [
         'id_sekolah',
         'nama_guru',
+        'nip',
         'email',
         'no_telp',
         'alamat',
         'foto'
+    ];
+
+    protected $casts = [
+        'id_guru' => 'integer',
+        'id_sekolah' => 'integer',
     ];
 
     // Relationships
@@ -58,12 +64,28 @@ class Guru extends Model
         return $query->where('id_sekolah', $idSekolah);
     }
 
+    public function scopeWithSekolah($query)
+    {
+        return $query->with('sekolah');
+    }
+
     // Accessors
     public function getFotoUrlAttribute()
     {
         if ($this->foto) {
-            return asset('photos/' . $this->foto);
+            return asset('storage/photos/' . $this->foto);
         }
-        return asset('photos/default-guru.png');
+        return asset('storage/photos/default-guru.png');
+    }
+
+    public function getNamaLengkapAttribute()
+    {
+        return $this->nama_guru;
+    }
+
+    // Mutators
+    public function setEmailAttribute($value)
+    {
+        $this->attributes['email'] = strtolower($value);
     }
 }
