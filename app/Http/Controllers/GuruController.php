@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use App\Http\Resources\GuruResource;
 
 class GuruController extends Controller
 {
@@ -356,10 +357,8 @@ class GuruController extends Controller
         $gurus = $query->orderBy('nama_guru')
                       ->paginate(12)
                       ->withQueryString();
-                      
-        $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
 
-        return view('frontend.profilPengajar', compact('gurus', 'sekolahs'));
+        return GuruResource::collection($gurus);
     }
 
     /**
@@ -371,7 +370,7 @@ class GuruController extends Controller
             // Validate sekolah exists
             if (!Sekolah::where('id_sekolah', $idSekolah)->exists()) {
                 return response()->json([
-                    'success' => false,
+                    'status' => 'error',
                     'message' => 'Sekolah tidak ditemukan'
                 ], 404);
             }
@@ -381,17 +380,35 @@ class GuruController extends Controller
                          ->orderBy('nama_guru')
                          ->get();
 
-            return response()->json([
-                'success' => true,
-                'data' => $gurus
-            ]);
+            return GuruResource::collection($gurus);
             
         } catch (\Exception $e) {
             return response()->json([
-                'success' => false,
+                'status' => 'error',
                 'message' => 'Terjadi kesalahan saat mengambil data guru'
             ], 500);
         }
+    }
+
+    /**
+     * Search guru for API/AJAX
+     */
+    public function search(Request $request)
+    {
+        $query = Guru::query();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_guru', 'like', "%{$search}%")
+                  ->orWhere('nip', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+        $gurus = $query->orderBy('nama_guru')
+                       ->paginate(10); // Paginate for API
+
+        return GuruResource::collection($gurus);
     }
 
     /**

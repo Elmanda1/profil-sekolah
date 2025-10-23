@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use App\Http\Resources\SiswaResource; // ADDED
 
 class SiswaController extends Controller
 {
@@ -56,7 +57,7 @@ class SiswaController extends Controller
     {
         $sekolahs = Sekolah::all();
         $kelass = Kelas::with('jurusan', 'jenisKelas')->get();
-        
+
         return view('admin.siswa.create', compact('sekolahs', 'kelass'));
     }
 
@@ -82,7 +83,7 @@ class SiswaController extends Controller
         ]);
 
         DB::beginTransaction();
-        
+
         try {
             // Handle photo upload
             if ($request->hasFile('foto')) {
@@ -120,7 +121,7 @@ class SiswaController extends Controller
                            ->with('success', 'Siswa berhasil ditambahkan.');
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return redirect()->back()
                            ->withInput()
                            ->with('error', 'Gagal menambahkan siswa: ' . $e->getMessage());
@@ -139,7 +140,7 @@ class SiswaController extends Controller
             'kelas.jenisKelas',
             'krs.mapel'
         ]);
-        
+
         return view('admin.siswa.show', compact('siswa'));
     }
 
@@ -151,7 +152,7 @@ class SiswaController extends Controller
         $sekolahs = Sekolah::all();
         $kelass = Kelas::with('jurusan', 'jenisKelas')->get();
         $siswa->load('akun', 'kelasSiswa');
-        
+
         return view('admin.siswa.edit', compact('siswa', 'sekolahs', 'kelass'));
     }
 
@@ -201,7 +202,7 @@ class SiswaController extends Controller
     public function destroy(Siswa $siswa)
     {
         DB::beginTransaction();
-        
+
         try {
             // Delete associated account
             if ($siswa->akun) {
@@ -221,7 +222,7 @@ class SiswaController extends Controller
                            ->with('success', 'Siswa berhasil dihapus.');
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return redirect()->back()
                            ->with('error', 'Gagal menghapus siswa: ' . $e->getMessage());
         }
@@ -277,7 +278,7 @@ class SiswaController extends Controller
 
         try {
             $kelasSiswa = KelasSiswa::findOrFail($request->id_kelas_siswa);
-            
+
             // Verify that this kelas_siswa belongs to the current siswa
             if ($kelasSiswa->id_siswa != $siswa->id_siswa) {
                 return redirect()->back()
@@ -339,14 +340,14 @@ class SiswaController extends Controller
 
         try {
             $akun = $siswa->akun;
-            
+
             if (!$akun) {
                 return redirect()->back()
                                ->with('error', 'Siswa tidak memiliki akun.');
             }
 
             $updateData = ['username' => $request->username];
-            
+
             if ($request->password) {
                 $updateData['password'] = Hash::make($request->password);
             }
@@ -436,7 +437,7 @@ class SiswaController extends Controller
         try {
             // Implementation would depend on your preferred Excel/CSV library
             // This is a placeholder for the import logic
-            
+
             return redirect()->route('siswa.index')
                            ->with('success', 'Data siswa berhasil diimport.');
         } catch (\Exception $e) {
@@ -453,7 +454,7 @@ class SiswaController extends Controller
         try {
             // Implementation would depend on your preferred Excel/CSV library
             // This is a placeholder for the export logic
-            
+
             return response()->download(storage_path('app/exports/siswa.xlsx'));
         } catch (\Exception $e) {
             return redirect()->back()

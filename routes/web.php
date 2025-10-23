@@ -120,12 +120,23 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('/prestasi', [PrestasiController::class, 'bulkDelete'])->name('prestasi.delete');
     });
 
-    // API-like routes for AJAX calls (Optional)
+    // API routes (versioned)
     Route::prefix('api')->name('api.')->group(function () {
-        Route::get('/siswa/search', [SiswaController::class, 'search'])->name('siswa.search');
-        Route::get('/guru/search', [GuruController::class, 'search'])->name('guru.search');
-        Route::get('/kelas/{kelas}/siswa', [KelasController::class, 'getSiswa'])->name('kelas.siswa');
-        Route::get('/jurusan/{jurusan}/kelas', [JurusanController::class, 'getKelas'])->name('jurusan.kelas');
+        Route::prefix('v1')->name('v1.')->middleware('auth:api')->group(function () {
+            // Existing API-like routes, now versioned
+            Route::get('/siswa/search', [SiswaController::class, 'search'])->name('siswa.search');
+            Route::get('/guru/search', [GuruController::class, 'search'])->name('guru.search');
+            Route::get('/kelas/{kelas}/siswa', [KelasController::class, 'getSiswa'])->name('kelas.siswa');
+            Route::get('/jurusan/{jurusan}/kelas', [JurusanController::class, 'getKelas'])->name('jurusan.kelas');
+
+            // Akun API routes
+            Route::get('/akun', [App\Http\Controllers\AkunApiController::class, 'getAkunDetails'])->name('akun');
+            Route::post('/gantipw', [App\Http\Controllers\AkunApiController::class, 'changePassword'])->name('gantipw');
+
+            // Tabungan API routes
+            Route::get('/tabungan/history', [App\Http\Controllers\TabunganController::class, 'history'])->name('tabungan.history');
+            Route::get('/tabungan/history/latest', [App\Http\Controllers\TabunganController::class, 'latestHistory'])->name('tabungan.history.latest');
+        });
     });
 });
 

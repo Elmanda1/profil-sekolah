@@ -11,6 +11,7 @@ use App\Models\Siswa;
 use App\Models\KelasSiswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Http\Resources\KelasResource;
 
 class KelasController extends Controller
 {
@@ -50,7 +51,7 @@ class KelasController extends Controller
         $sekolahs = Sekolah::all();
         $jurusans = Jurusan::all();
 
-        return view('admin.kelas.index', compact('kelass', 'sekolahs', 'jurusans'));
+        return KelasResource::collection($kelass);
     }
 
     /**
@@ -127,7 +128,7 @@ class KelasController extends Controller
             'kelasSiswa'
         ]);
         
-        return view('admin.kelas.show', compact('kelas'));
+        return new KelasResource($kelas->load(['sekolah', 'jurusan', 'jenisKelas', 'waliKelas']));
     }
 
     /**
@@ -294,7 +295,7 @@ class KelasController extends Controller
                       ->orderBy('nama_kelas')
                       ->get();
 
-        return response()->json($kelass);
+        return KelasResource::collection($kelass);
     }
 
     /**
@@ -308,7 +309,7 @@ class KelasController extends Controller
                       ->orderBy('nama_kelas')
                       ->get();
 
-        return response()->json($kelass);
+        return KelasResource::collection($kelass);
     }
 
     /**

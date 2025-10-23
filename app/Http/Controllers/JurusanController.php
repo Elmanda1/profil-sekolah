@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Jurusan;
 use App\Models\Sekolah;
 use Illuminate\Http\Request;
+use App\Http\Resources\JurusanResource;
 
 class JurusanController extends Controller
 {
@@ -33,7 +34,7 @@ class JurusanController extends Controller
         $jurusans = $query->orderBy('nama_jurusan')->paginate(10);
         $sekolahs = Sekolah::all();
 
-        return view('admin.jurusan.index', compact('jurusans', 'sekolahs'));
+        return JurusanResource::collection($jurusans);
     }
 
     /**
@@ -76,7 +77,7 @@ class JurusanController extends Controller
     {
         $jurusan->load(['sekolah', 'kelas.siswa', 'mapel']);
         
-        return view('admin.jurusan.show', compact('jurusan'));
+        return new JurusanResource($jurusan->load(['sekolah', 'kelas.siswa', 'mapel']));
     }
 
     /**
@@ -144,7 +145,7 @@ class JurusanController extends Controller
                           ->orderBy('nama_jurusan')
                           ->get();
 
-        return response()->json($jurusans);
+        return JurusanResource::collection($jurusans);
     }
 
     /**
