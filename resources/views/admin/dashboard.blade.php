@@ -7,6 +7,7 @@
 @stop
 
 @section('content')
+@include('partials.alerts')
 <div class="row">
     <!-- Info Boxes -->
     <div class="col-lg-3 col-6">

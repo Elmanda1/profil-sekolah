@@ -46,7 +46,9 @@ class KelasSiswaSeeder extends Seeder
             // Assign student to class (only id_kelas and id_siswa as per schema)
             DB::table('tb_kelas_siswa')->insert([
                 'id_kelas' => $kelas->id_kelas,
-                'id_siswa' => $siswa->id_siswa
+                'id_siswa' => $siswa->id_siswa,
+                'tahun_ajaran' => '2023/2024',
+                'semester' => 'Ganjil'
             ]);
             
             $studentsAssigned++;
