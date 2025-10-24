@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('alamat')->nullable();
             $table->string('foto')->nullable();
             $table->timestamps(); 
+            $table->softDeletes();
         });
     }
 

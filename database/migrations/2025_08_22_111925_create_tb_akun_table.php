@@ -20,6 +20,7 @@ return new class extends Migration
             $table->integer('id_siswa')->nullable()->index('idx_akun_id_siswa');
             $table->timestamp('created_at')->nullable()->useCurrent();
             $table->timestamp('updated_at')->useCurrentOnUpdate()->nullable()->useCurrent();
+            $table->softDeletes(); 
         });
     }
 
