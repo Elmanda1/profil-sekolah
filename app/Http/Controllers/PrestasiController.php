@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Prestasi;
 use App\Models\Sekolah;
 use App\Models\Siswa;
+use App\Http\Requests\StorePrestasiRequest;
+use App\Http\Requests\UpdatePrestasiRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -15,7 +17,7 @@ class PrestasiController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Prestasi::with([ 'sekolah', 'siswa']);
+        $query = Prestasi::with(['sekolah:id_sekolah,nama_sekolah']);
 
         // Filter by sekolah
         if ($request->has('sekolah_id') && $request->sekolah_id) {
@@ -49,8 +51,9 @@ class PrestasiController extends Controller
             });
         }
 
-        $prestasis = $query->orderBy('tanggal', 'desc')->paginate(10);
-        $sekolahs = Sekolah::all();
+        $prestasis = $query->select('id_prestasi', 'judul', 'tanggal', 'id_sekolah')
+                         ->orderBy('tanggal', 'desc')->paginate(10);
+        $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
 
         // Data for filters
         $tingkats = ['Sekolah', 'Kabupaten/Kota', 'Provinsi', 'Nasional', 'Internasional'];
@@ -64,7 +67,7 @@ class PrestasiController extends Controller
      */
     public function create()
     {
-        $sekolahs = Sekolah::all();
+        $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
         $tingkats = ['Sekolah', 'Kabupaten/Kota', 'Provinsi', 'Nasional', 'Internasional'];
         $peringkats = ['Juara 1', 'Juara 2', 'Juara 3', 'Harapan 1', 'Harapan 2', 'Harapan 3', 'Finalis', 'Peserta'];
 
@@ -74,18 +77,9 @@ class PrestasiController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StorePrestasiRequest $request)
     {
-        $validated = $request->validate([
-            'id_sekolah' => 'required|exists:tb_sekolah,id_sekolah',
-            'judul' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
-            'tanggal' => 'required|date',
-            'tahun' => 'required|integer|min:2000',
-            'tingkat' => 'required|in:Sekolah,Kabupaten/Kota,Provinsi,Nasional,Internasional',
-            'peringkat' => 'required|in:Juara 1,Juara 2,Juara 3,Harapan 1,Harapan 2,Harapan 3,Finalis,Peserta',
-            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
-        ]);
+        $validated = $request->validated();
 
         try {
             // Handle image upload
@@ -121,7 +115,7 @@ class PrestasiController extends Controller
      */
     public function edit(Prestasi $prestasi)
     {
-        $sekolahs = Sekolah::all();
+        $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
         $tingkats = ['Sekolah', 'Kabupaten/Kota', 'Provinsi', 'Nasional', 'Internasional'];
         $peringkats = ['Juara 1', 'Juara 2', 'Juara 3', 'Harapan 1', 'Harapan 2', 'Harapan 3', 'Finalis', 'Peserta'];
 
@@ -131,18 +125,9 @@ class PrestasiController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Prestasi $prestasi)
+    public function update(UpdatePrestasiRequest $request, Prestasi $prestasi)
     {
-        $validated = $request->validate([
-            'id_sekolah' => 'required|exists:tb_sekolah,id_sekolah',
-            'judul' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
-            'tanggal' => 'required|date',
-            'tahun' => 'required|integer|min:2000',
-            'tingkat' => 'required|in:Sekolah,Kabupaten/Kota,Provinsi,Nasional,Internasional',
-            'peringkat' => 'required|in:Juara 1,Juara 2,Juara 3,Harapan 1,Harapan 2,Harapan 3,Finalis,Peserta',
-            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
-        ]);
+        $validated = $request->validated();
 
         try {
             // Handle image upload
@@ -195,7 +180,7 @@ class PrestasiController extends Controller
      */
     public function prestasi(Request $request)
     {
-        $query = Prestasi::with(['sekolah']);
+        $query = Prestasi::with(['sekolah:id_sekolah,nama_sekolah']);
 
         // Filter by sekolah
         if ($request->has('sekolah_id') && $request->sekolah_id) {
@@ -227,8 +212,9 @@ class PrestasiController extends Controller
             });
         }
 
-        $prestasis = $query->orderBy('tanggal', 'desc')->paginate(12);
-        $sekolahs = Sekolah::all();
+        $prestasis = $query->select('id_prestasi', 'judul', 'tanggal', 'id_sekolah')
+                         ->orderBy('tanggal', 'desc')->paginate(12);
+        $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
 
         // Data for filters
         $tingkats = ['Sekolah', 'Kabupaten/Kota', 'Provinsi', 'Nasional', 'Internasional'];
@@ -248,9 +234,10 @@ class PrestasiController extends Controller
      */
     public function getRecent($limit = 6)
     {
-        return Prestasi::with(['sekolah'])
+        return Prestasi::with(['sekolah:id_sekolah,nama_sekolah'])
                       ->orderBy('tanggal', 'desc')
                       ->limit($limit)
+                      ->select('id_prestasi', 'judul', 'tanggal', 'id_sekolah')
                       ->get();
     }
 
@@ -259,11 +246,12 @@ class PrestasiController extends Controller
      */
     public function getHighlighted($limit = 3)
     {
-        return Prestasi::with(['sekolah'])
+        return Prestasi::with(['sekolah:id_sekolah,nama_sekolah'])
                       ->whereIn('tingkat', ['Nasional', 'Internasional'])
                       ->whereIn('peringkat', ['Juara 1', 'Juara 2', 'Juara 3'])
                       ->orderBy('tanggal', 'desc')
                       ->limit($limit)
+                      ->select('id_prestasi', 'judul', 'tanggal', 'id_sekolah')
                       ->get();
     }
 
@@ -300,6 +288,7 @@ class PrestasiController extends Controller
     {
         $prestasis = Prestasi::where('id_sekolah', $idSekolah)
                             ->orderBy('tanggal', 'desc')
+                            ->select('id_prestasi', 'judul', 'tanggal')
                             ->get();
 
         return response()->json($prestasis);
@@ -307,7 +296,7 @@ class PrestasiController extends Controller
 
     public function home()
     {
-        $highlightPrestasis = Prestasi::orderBy('tanggal', 'desc')->take(3)->get();
+        $highlightPrestasis = Prestasi::orderBy('tanggal', 'desc')->take(3)->select('id_prestasi', 'judul', 'tanggal')->get();
         return view('frontend.home', compact('highlightPrestasis'));
     }
 

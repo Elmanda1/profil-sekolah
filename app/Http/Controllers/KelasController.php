@@ -9,6 +9,11 @@ use App\Models\JenisKelas;
 use App\Models\Guru;
 use App\Models\Siswa;
 use App\Models\KelasSiswa;
+use App\Http\Requests\StoreKelasRequest;
+use App\Http\Requests\UpdateKelasRequest;
+use App\Http\Requests\AddSiswaToKelasRequest;
+use App\Http\Requests\RemoveSiswaFromKelasRequest;
+use App\Http\Requests\MassAssignSiswaToKelasRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\KelasResource;
@@ -20,7 +25,7 @@ class KelasController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Kelas::with(['sekolah', 'jurusan', 'jenisKelas', 'waliKelas'])
+        $query = Kelas::with(['sekolah:id_sekolah,nama_sekolah', 'jurusan:id_jurusan,nama_jurusan', 'jenisKelas:id_jenis_kelas,nama_jenis_kelas', 'waliKelas:id_guru,nama_guru'])
                      ->withSiswaCount();
 
         // Filter by sekolah
@@ -47,9 +52,10 @@ class KelasController extends Controller
             });
         }
 
-        $kelass = $query->orderBy('nama_kelas')->paginate(10);
-        $sekolahs = Sekolah::all();
-        $jurusans = Jurusan::all();
+        $kelass = $query->select('id_kelas', 'nama_kelas', 'id_sekolah', 'id_jurusan', 'id_jenis_kelas', 'wali_kelas')
+                       ->orderBy('nama_kelas')->paginate(10);
+        $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
+        $jurusans = Jurusan::select('id_jurusan', 'nama_jurusan')->get();
 
         return KelasResource::collection($kelass);
     }
@@ -59,10 +65,10 @@ class KelasController extends Controller
      */
     public function create()
     {
-        $sekolahs = Sekolah::all();
-        $jurusans = Jurusan::all();
-        $jenisKelass = JenisKelas::all();
-        $gurus = Guru::all();
+        $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
+        $jurusans = Jurusan::select('id_jurusan', 'nama_jurusan')->get();
+        $jenisKelass = JenisKelas::select('id_jenis_kelas', 'nama_jenis_kelas')->get();
+        $gurus = Guru::select('id_guru', 'nama_guru')->get();
 
         return view('admin.kelas.create', compact('sekolahs', 'jurusans', 'jenisKelass', 'gurus'));
     }
@@ -70,17 +76,43 @@ class KelasController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreKelasRequest $request)
     {
-        $validated = $request->validate([
-            'id_sekolah' => 'required|exists:tb_sekolah,id_sekolah',
-            'id_jurusan' => 'required|exists:tb_jurusan,id_jurusan',
-            'id_jenis_kelas' => 'required|exists:tb_jenis_kelas,id_jenis_kelas',
-            'nama_kelas' => 'required|string|max:255',
-            'wali_kelas' => 'nullable|exists:tb_guru,id_guru'
-        ]);
+        $validated = $request->validated();
 
         try {
+            // Check if nama_kelas is unique within the same sekolah and jurusan
+            $exists = Kelas::where('id_sekolah', $request->id_sekolah)
+                          ->where('id_jurusan', $request->id_jurusan)
+                          ->where('nama_kelas', $request->nama_kelas)
+                          ->exists();
+
+            if ($exists) {
+                return redirect()->back()
+                               ->withInput()
+                               ->with('error', 'Nama kelas sudah ada di jurusan yang sama.');
+            }
+
+            // Check if wali kelas is already assigned to another class
+            if ($request->wali_kelas) {
+                $waliExists = Kelas::where('wali_kelas', $request->wali_kelas)->exists();
+                if ($waliExists) {
+                    return redirect()->back()
+                                   ->withInput()
+                                   ->with('error', 'Guru sudah menjadi wali kelas di kelas lain.');
+                }
+            }
+
+            Kelas::create($validated);
+
+            return redirect()->route('kelas.index')
+                           ->with('success', 'Kelas berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                           ->withInput()
+                           ->with('error', 'Gagal menambahkan kelas: ' . $e->getMessage());
+        }
+    }
             // Check if nama_kelas is unique within the same sekolah and jurusan
             $exists = Kelas::where('id_sekolah', $request->id_sekolah)
                           ->where('id_jurusan', $request->id_jurusan)
@@ -120,15 +152,15 @@ class KelasController extends Controller
     public function show(Kelas $kelas)
     {
         $kelas->load([
-            'sekolah',
-            'jurusan',
-            'jenisKelas',
-            'waliKelas',
-            'siswa.prestasi',
+            'sekolah:id_sekolah,nama_sekolah',
+            'jurusan:id_jurusan,nama_jurusan',
+            'jenisKelas:id_jenis_kelas,nama_jenis_kelas',
+            'waliKelas:id_guru,nama_guru',
+            'siswa:id_siswa,nama_siswa,nisn',
             'kelasSiswa'
         ]);
         
-        return new KelasResource($kelas->load(['sekolah', 'jurusan', 'jenisKelas', 'waliKelas']));
+        return new KelasResource($kelas);
     }
 
     /**
@@ -136,10 +168,10 @@ class KelasController extends Controller
      */
     public function edit(Kelas $kelas)
     {
-        $sekolahs = Sekolah::all();
-        $jurusans = Jurusan::all();
-        $jenisKelass = JenisKelas::all();
-        $gurus = Guru::all();
+        $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
+        $jurusans = Jurusan::select('id_jurusan', 'nama_jurusan')->get();
+        $jenisKelass = JenisKelas::select('id_jenis_kelas', 'nama_jenis_kelas')->get();
+        $gurus = Guru::select('id_guru', 'nama_guru')->get();
 
         return view('admin.kelas.edit', compact('kelas', 'sekolahs', 'jurusans', 'jenisKelass', 'gurus'));
     }
@@ -147,15 +179,9 @@ class KelasController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Kelas $kelas)
+    public function update(UpdateKelasRequest $request, Kelas $kelas)
     {
-        $validated = $request->validate([
-            'id_sekolah' => 'required|exists:tb_sekolah,id_sekolah',
-            'id_jurusan' => 'required|exists:tb_jurusan,id_jurusan',
-            'id_jenis_kelas' => 'required|exists:tb_jenis_kelas,id_jenis_kelas',
-            'nama_kelas' => 'required|string|max:255',
-            'wali_kelas' => 'nullable|exists:tb_guru,id_guru'
-        ]);
+        $validated = $request->validated();
 
         try {
             // Check if nama_kelas is unique within the same sekolah and jurusan (except current kelas)
@@ -219,14 +245,9 @@ class KelasController extends Controller
     /**
      * Add siswa to kelas
      */
-    public function addSiswa(Request $request, Kelas $kelas)
+    public function addSiswa(AddSiswaToKelasRequest $request, Kelas $kelas)
     {
-        $validated = $request->validate([
-            'siswa_ids' => 'required|array',
-            'siswa_ids.*' => 'exists:tb_siswa,id_siswa',
-            'tahun_ajaran' => 'required|string|max:20',
-            'semester' => 'required|in:1,2'
-        ]);
+        $validated = $request->validated();
 
         DB::beginTransaction();
 
@@ -264,12 +285,9 @@ class KelasController extends Controller
     /**
      * Remove siswa from kelas
      */
-    public function removeSiswa(Request $request, Kelas $kelas)
+    public function removeSiswa(RemoveSiswaFromKelasRequest $request, Kelas $kelas)
     {
-        $validated = $request->validate([
-            'kelas_siswa_ids' => 'required|array',
-            'kelas_siswa_ids.*' => 'exists:tb_kelas_siswa,id_kelas_siswa'
-        ]);
+        $validated = $request->validated();
 
         try {
             KelasSiswa::whereIn('id_kelas_siswa', $request->kelas_siswa_ids)
@@ -290,7 +308,7 @@ class KelasController extends Controller
     public function getBySekolah($idSekolah)
     {
         $kelass = Kelas::bySekolah($idSekolah)
-                      ->with('jurusan', 'jenisKelas')
+                      ->with('jurusan:id_jurusan,nama_jurusan', 'jenisKelas:id_jenis_kelas,nama_jenis_kelas')
                       ->select('id_kelas', 'nama_kelas', 'id_jurusan', 'id_jenis_kelas')
                       ->orderBy('nama_kelas')
                       ->get();
@@ -304,7 +322,7 @@ class KelasController extends Controller
     public function getByJurusan($idJurusan)
     {
         $kelass = Kelas::byJurusan($idJurusan)
-                      ->with('jenisKelas')
+                      ->with('jenisKelas:id_jenis_kelas,nama_jenis_kelas')
                       ->select('id_kelas', 'nama_kelas', 'id_jenis_kelas')
                       ->orderBy('nama_kelas')
                       ->get();
@@ -350,7 +368,7 @@ class KelasController extends Controller
             'total_kelas' => $query->count(),
             'kelas_with_wali' => $query->whereNotNull('wali_kelas')->count(),
             'total_siswa' => $query->withCount('siswa')->get()->sum('siswa_count'),
-            'by_jurusan' => $query->with('jurusan')
+            'by_jurusan' => $query->with('jurusan:id_jurusan,nama_jurusan')
                                  ->get()
                                  ->groupBy('jurusan.nama_jurusan')
                                  ->map->count(),
@@ -363,15 +381,9 @@ class KelasController extends Controller
     /**
      * Mass assign siswa to multiple kelas
      */
-    public function massAssign(Request $request)
+    public function massAssign(MassAssignSiswaToKelasRequest $request)
     {
-        $validated = $request->validate([
-            'assignments' => 'required|array',
-            'assignments.*.id_siswa' => 'required|exists:tb_siswa,id_siswa',
-            'assignments.*.id_kelas' => 'required|exists:tb_kelas,id_kelas',
-            'tahun_ajaran' => 'required|string|max:20',
-            'semester' => 'required|in:1,2'
-        ]);
+        $validated = $request->validated();
 
         DB::beginTransaction();
 

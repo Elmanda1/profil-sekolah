@@ -6,6 +6,8 @@ use App\Models\Guru;
 use App\Models\Sekolah;
 use App\Models\Akun;
 use App\Models\Mapel;
+use App\Http\Requests\StoreGuruRequest;
+use App\Http\Requests\UpdateGuruRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -21,7 +23,7 @@ class GuruController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Guru::with(['sekolah', 'akun', 'mapel']);
+        $query = Guru::with(['sekolah:id_sekolah,nama_sekolah', 'akun:id_akun,username,id_guru', 'mapel:id_mapel,nama_mapel']);
 
         // Filter by sekolah
         if ($request->filled('sekolah_id')) {
@@ -48,7 +50,9 @@ class GuruController extends Controller
             $query->orderBy($sortBy, $sortDirection);
         }
 
-        $gurus = $query->paginate(15)->withQueryString();
+        $gurus = $query->select('id_guru', 'nama_guru', 'nip', 'email', 'no_telp', 'id_sekolah')
+                       ->paginate(15)
+                       ->withQueryString();
         $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
         $search = $request->search;
 
@@ -61,29 +65,16 @@ class GuruController extends Controller
     public function create()
     {
         $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
-        $mapels = Mapel::all();
+        $mapels = Mapel::select('id_mapel', 'nama_mapel')->get();
         return view('admin.guru.create', compact('sekolahs', 'mapels'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreGuruRequest $request)
     {
-        $validated = $request->validate([
-            'id_sekolah' => 'required|exists:tb_sekolah,id_sekolah',
-            'nama_guru' => 'required|string|max:255',
-            'nip' => 'nullable|string|max:20|unique:tb_guru,nip',
-            'email' => 'required|email|max:255|unique:tb_guru,email',
-            'no_telp' => 'nullable|string|max:20',
-            'alamat' => 'nullable|string|max:1000',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'create_account' => 'boolean',
-            'username' => 'required_if:create_account,true|string|min:3|max:50|unique:tb_akun,username',
-            'password' => 'required_if:create_account,true|string|min:8|confirmed',
-            'mapel' => 'nullable|array',
-            'mapel.*' => 'exists:tb_mapel,id_mapel'
-        ]);
+        $validated = $request->validated();
 
         DB::beginTransaction();
 
@@ -141,7 +132,12 @@ class GuruController extends Controller
      */
     public function show(Guru $guru)
     {
-        $guru->load(['sekolah', 'akun', 'mapel', 'kelasWali.siswa']);
+        $guru->load([
+            'sekolah:id_sekolah,nama_sekolah',
+            'akun:id_akun,username,id_guru',
+            'mapel:id_mapel,nama_mapel',
+            'kelasWali.siswa:id_siswa,nama_siswa'
+        ]);
         
         return view('admin.guru.show', compact('guru'));
     }
@@ -152,8 +148,8 @@ class GuruController extends Controller
     public function edit(Guru $guru)
     {
         $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
-        $mapels = Mapel::all();
-        $guru->load('akun', 'mapel');
+        $mapels = Mapel::select('id_mapel', 'nama_mapel')->get();
+        $guru->load('akun:id_akun,username,id_guru', 'mapel:id_mapel,nama_mapel');
         
         return view('admin.guru.edit', compact('guru', 'sekolahs', 'mapels'));
     }
@@ -161,19 +157,9 @@ class GuruController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Guru $guru)
+    public function update(UpdateGuruRequest $request, Guru $guru)
     {
-        $validated = $request->validate([
-            'id_sekolah' => 'required|exists:tb_sekolah,id_sekolah',
-            'nama_guru' => 'required|string|max:255',
-            'nip' => ['nullable', 'string', 'max:20', Rule::unique('tb_guru', 'nip')->ignore($guru->id_guru, 'id_guru')],
-            'email' => ['required', 'email', 'max:255', Rule::unique('tb_guru', 'email')->ignore($guru->id_guru, 'id_guru')],
-            'no_telp' => 'nullable|string|max:20',
-            'alamat' => 'nullable|string|max:1000',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'mapel' => 'nullable|array',
-            'mapel.*' => 'exists:tb_mapel,id_mapel'
-        ]);
+        $validated = $request->validated();
 
         DB::beginTransaction();
 
@@ -355,7 +341,7 @@ class GuruController extends Controller
      */
     public function profilPengajar(Request $request)
     {
-        $query = Guru::with(['sekolah', 'mapel']);
+        $query = Guru::with(['sekolah:id_sekolah,nama_sekolah', 'mapel:id_mapel,nama_mapel']);
 
         // Filter by sekolah
         if ($request->filled('sekolah_id')) {
@@ -373,7 +359,8 @@ class GuruController extends Controller
             });
         }
 
-        $gurus = $query->orderBy('nama_guru')
+        $gurus = $query->select('id_guru', 'nama_guru', 'foto', 'id_sekolah')
+                      ->orderBy('nama_guru')
                       ->paginate(12);
         return view('frontend.profilPengajar', compact('gurus'));
     }

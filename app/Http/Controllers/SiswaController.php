@@ -7,6 +7,8 @@ use App\Models\Sekolah;
 use App\Models\Kelas;
 use App\Models\Akun;
 use App\Models\KelasSiswa;
+use App\Http\Requests\StoreSiswaRequest;
+use App\Http\Requests\UpdateSiswaRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -20,7 +22,7 @@ class SiswaController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Siswa::with(['sekolah', 'akun']);
+        $query = Siswa::with(['sekolah:id_sekolah,nama_sekolah', 'akun:id_akun,username,id_siswa']);
 
         // Filter by sekolah
         if ($request->has('sekolah_id') && $request->sekolah_id) {
@@ -43,9 +45,14 @@ class SiswaController extends Controller
             });
         }
 
-        $siswas = $query->orderBy('nama_siswa')->paginate(10);
-        $sekolahs = Sekolah::all();
-        $kelass = Kelas::with('jurusan', 'jenisKelas')->get();
+        $siswas = $query->select('id_siswa', 'nama_siswa', 'nisn', 'email', 'no_telp', 'id_sekolah')
+                       ->orderBy('nama_siswa')
+                       ->paginate(10);
+
+        $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
+        $kelass = Kelas::with('jurusan:id_jurusan,nama_jurusan', 'jenisKelas:id_jenis_kelas,nama_jenis_kelas')
+                       ->select('id_kelas', 'nama_kelas', 'id_jurusan', 'id_jenis_kelas')
+                       ->get();
         $search = $request->search;
 
         return view('admin.siswa.index', compact('siswas', 'sekolahs', 'kelass', 'search'));
@@ -56,8 +63,10 @@ class SiswaController extends Controller
      */
     public function create()
     {
-        $sekolahs = Sekolah::all();
-        $kelass = Kelas::with('jurusan', 'jenisKelas')->get();
+        $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
+        $kelass = Kelas::with('jurusan:id_jurusan,nama_jurusan', 'jenisKelas:id_jenis_kelas,nama_jenis_kelas')
+                       ->select('id_kelas', 'nama_kelas', 'id_jurusan', 'id_jenis_kelas')
+                       ->get();
 
         return view('admin.siswa.create', compact('sekolahs', 'kelass'));
     }
@@ -65,25 +74,9 @@ class SiswaController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreSiswaRequest $request)
     {
-        $validated = $request->validate([
-            'id_sekolah' => 'required|exists:tb_sekolah,id_sekolah',
-            'nisn' => 'required|string|unique:tb_siswa,nisn',
-            'nama_siswa' => 'required|string|max:255',
-            'email' => 'required|email|unique:tb_siswa,email',
-            'no_telp' => 'required|string|max:20',
-            'alamat' => 'required|string',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
-            'tanggal_lahir' => 'nullable|date',
-            'id_kelas' => 'required|exists:tb_kelas,id_kelas',
-            'tahun_ajaran' => 'required|string|max:20',
-            'semester' => 'required|in:1,2',
-            'create_account' => 'boolean',
-            'username' => 'required_if:create_account,1|string|unique:tb_akun,username',
-            'password' => 'required_if:create_account,1|string|min:8'
-        ]);
+        $validated = $request->validated();
 
         DB::beginTransaction();
 
@@ -137,11 +130,11 @@ class SiswaController extends Controller
     public function show(Siswa $siswa)
     {
         $siswa->load([
-            'sekolah',
-            'akun',
-            'kelas.jurusan',
-            'kelas.jenisKelas',
-            'krs.mapel'
+            'sekolah:id_sekolah,nama_sekolah',
+            'akun:id_akun,username,id_siswa',
+            'kelas.jurusan:id_jurusan,nama_jurusan',
+            'kelas.jenisKelas:id_jenis_kelas,nama_jenis_kelas',
+            'krs.mapel:id_mapel,nama_mapel'
         ]);
 
         return view('admin.siswa.show', compact('siswa'));
@@ -152,9 +145,11 @@ class SiswaController extends Controller
      */
     public function edit(Siswa $siswa)
     {
-        $sekolahs = Sekolah::all();
-        $kelass = Kelas::with('jurusan', 'jenisKelas')->get();
-        $siswa->load('akun', 'kelasSiswa');
+        $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
+        $kelass = Kelas::with('jurusan:id_jurusan,nama_jurusan', 'jenisKelas:id_jenis_kelas,nama_jenis_kelas')
+                       ->select('id_kelas', 'nama_kelas', 'id_jurusan', 'id_jenis_kelas')
+                       ->get();
+        $siswa->load('akun:id_akun,username,id_siswa', 'kelasSiswa');
 
         return view('admin.siswa.edit', compact('siswa', 'sekolahs', 'kelass'));
     }
@@ -162,19 +157,9 @@ class SiswaController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Siswa $siswa)
+    public function update(UpdateSiswaRequest $request, Siswa $siswa)
     {
-        $validated = $request->validate([
-            'id_sekolah' => 'required|exists:tb_sekolah,id_sekolah',
-            'nisn' => 'required|string|unique:tb_siswa,nisn,' . $siswa->id_siswa . ',id_siswa',
-            'nama_siswa' => 'required|string|max:255',
-            'email' => 'required|email|unique:tb_siswa,email,' . $siswa->id_siswa . ',id_siswa',
-            'no_telp' => 'required|string|max:20',
-            'alamat' => 'required|string',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
-            'tanggal_lahir' => 'nullable|date'
-        ]);
+        $validated = $request->validated();
 
         try {
             // Handle photo upload
@@ -393,9 +378,13 @@ class SiswaController extends Controller
             });
         }
 
-        $siswas = $query->orderBy('nama_siswa')->paginate(12);
-        $sekolahs = Sekolah::all();
-        $kelass = Kelas::with('jurusan', 'jenisKelas')->get();
+        $siswas = $query->select('id_siswa', 'nama_siswa', 'nisn', 'foto', 'id_sekolah')
+                       ->orderBy('nama_siswa')
+                       ->paginate(12);
+        $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
+        $kelass = Kelas::with('jurusan:id_jurusan,nama_jurusan', 'jenisKelas:id_jenis_kelas,nama_jenis_kelas')
+                       ->select('id_kelas', 'nama_kelas', 'id_jurusan', 'id_jenis_kelas')
+                       ->get();
 
         return view('frontend.profilSiswa', compact('siswas', 'sekolahs', 'kelass'));
     }

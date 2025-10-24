@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Jurusan;
 use App\Models\Sekolah;
+use App\Http\Requests\StoreJurusanRequest;
+use App\Http\Requests\UpdateJurusanRequest;
 use Illuminate\Http\Request;
 use App\Http\Resources\JurusanResource;
 
@@ -14,7 +16,7 @@ class JurusanController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Jurusan::with('sekolah');
+        $query = Jurusan::with('sekolah:id_sekolah,nama_sekolah');
 
         // Filter by sekolah
         if ($request->has('sekolah_id') && $request->sekolah_id) {
@@ -31,8 +33,9 @@ class JurusanController extends Controller
             });
         }
 
-        $jurusans = $query->orderBy('nama_jurusan')->paginate(10);
-        $sekolahs = Sekolah::all();
+        $jurusans = $query->select('id_jurusan', 'nama_jurusan', 'id_sekolah')
+                         ->orderBy('nama_jurusan')->paginate(10);
+        $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
 
         return JurusanResource::collection($jurusans);
     }
@@ -42,21 +45,16 @@ class JurusanController extends Controller
      */
     public function create()
     {
-        $sekolahs = Sekolah::all();
+        $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
         return view('admin.jurusan.create', compact('sekolahs'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreJurusanRequest $request)
     {
-        $validated = $request->validate([
-            'id_sekolah' => 'required|exists:tb_sekolah,id_sekolah',
-            'nama_jurusan' => 'required|string|max:255',
-            'kode_jurusan' => 'required|string|max:10|unique:tb_jurusan,kode_jurusan',
-            'deskripsi' => 'nullable|string'
-        ]);
+        $validated = $request->validated();
 
         try {
             Jurusan::create($validated);
@@ -75,9 +73,13 @@ class JurusanController extends Controller
      */
     public function show(Jurusan $jurusan)
     {
-        $jurusan->load(['sekolah', 'kelas.siswa', 'mapel']);
+        $jurusan->load([
+            'sekolah:id_sekolah,nama_sekolah',
+            'kelas.siswa:id_siswa,nama_siswa',
+            'mapel:id_mapel,nama_mapel'
+        ]);
         
-        return new JurusanResource($jurusan->load(['sekolah', 'kelas.siswa', 'mapel']));
+        return new JurusanResource($jurusan);
     }
 
     /**
@@ -85,21 +87,16 @@ class JurusanController extends Controller
      */
     public function edit(Jurusan $jurusan)
     {
-        $sekolahs = Sekolah::all();
+        $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
         return view('admin.jurusan.edit', compact('jurusan', 'sekolahs'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Jurusan $jurusan)
+    public function update(UpdateJurusanRequest $request, Jurusan $jurusan)
     {
-        $validated = $request->validate([
-            'id_sekolah' => 'required|exists:tb_sekolah,id_sekolah',
-            'nama_jurusan' => 'required|string|max:255',
-            'kode_jurusan' => 'required|string|max:10|unique:tb_jurusan,kode_jurusan,' . $jurusan->id_jurusan . ',id_jurusan',
-            'deskripsi' => 'nullable|string'
-        ]);
+        $validated = $request->validated();
 
         try {
             $jurusan->update($validated);
@@ -141,7 +138,7 @@ class JurusanController extends Controller
     public function getBySekolah($idSekolah)
     {
         $jurusans = Jurusan::where('id_sekolah', $idSekolah)
-                          ->select('id_jurusan', 'nama_jurusan', 'kode_jurusan')
+                          ->select('id_jurusan', 'nama_jurusan')
                           ->orderBy('nama_jurusan')
                           ->get();
 

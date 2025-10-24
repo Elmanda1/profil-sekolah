@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Artikel;
 use App\Models\Sekolah;
+use App\Http\Requests\StoreArtikelRequest;
+use App\Http\Requests\UpdateArtikelRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -15,7 +17,7 @@ class ArtikelController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Artikel::with('sekolah');
+        $query = Artikel::with('sekolah:id_sekolah,nama_sekolah');
 
         // Filter by sekolah if provided
         if ($request->has('sekolah_id') && $request->sekolah_id) {
@@ -39,8 +41,9 @@ class ArtikelController extends Controller
             $query->where('tanggal', '<=', $request->sampai_tanggal);
         }
 
-        $artikels = $query->orderBy('tanggal', 'desc')->paginate(10);
-        $sekolahs = Sekolah::all();
+        $artikels = $query->select('id_artikel', 'judul', 'tanggal', 'id_sekolah')
+                         ->orderBy('tanggal', 'desc')->paginate(10);
+        $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
 
         return view('admin.berita.index', compact('artikels', 'sekolahs'));
     }
@@ -50,22 +53,16 @@ class ArtikelController extends Controller
      */
     public function create()
     {
-        $sekolahs = Sekolah::all();
+        $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
         return view('admin.berita.create', compact('sekolahs'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreArtikelRequest $request)
     {
-        $validated = $request->validate([
-            'id_sekolah' => 'required|exists:tb_sekolah,id_sekolah',
-            'judul' => 'required|string|max:255',
-            'isi' => 'required|string',
-            'tanggal' => 'required|date',
-            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
-        ]);
+        $validated = $request->validated();
 
         try {
             // Handle image upload
@@ -74,6 +71,7 @@ class ArtikelController extends Controller
                 $filename = time() . '_' . Str::slug($request->judul) . '.' . $file->getClientOriginalExtension();
                 $file->move(public_path('photos'), $filename);
                 $validated['gambar'] = $filename;
+            }
             Artikel::create($validated);
 
             return redirect()->route('admin.berita.index');
@@ -98,22 +96,16 @@ class ArtikelController extends Controller
      */
     public function edit(Artikel $artikel)
     {
-        $sekolahs = Sekolah::all();
+        $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
         return view('admin.berita.edit', compact('artikel', 'sekolahs'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Artikel $artikel)
+    public function update(UpdateArtikelRequest $request, Artikel $artikel)
     {
-        $validated = $request->validate([
-            'id_sekolah' => 'required|exists:tb_sekolah,id_sekolah',
-            'judul' => 'required|string|max:255',
-            'isi' => 'required|string',
-            'tanggal' => 'required|date',
-            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
-        ]);
+        $validated = $request->validated();
 
         try {
             // Handle image upload
@@ -165,7 +157,7 @@ class ArtikelController extends Controller
      */
     public function getPublished(Request $request)
     {
-        $query = Artikel::published()->with('sekolah');
+        $query = Artikel::published()->with('sekolah:id_sekolah,nama_sekolah');
 
         if ($request->has('sekolah_id') && $request->sekolah_id) {
             $query->bySekolah($request->sekolah_id);
@@ -175,7 +167,7 @@ class ArtikelController extends Controller
             $query->recent($request->limit);
         }
 
-        return $query->get();
+        return $query->select('id_artikel', 'judul', 'isi', 'tanggal', 'id_sekolah')->get();
     }
 
     /**
@@ -184,8 +176,9 @@ class ArtikelController extends Controller
     public function getRecent($limit = 5)
     {
         return Artikel::published()
-                     ->with('sekolah')
+                     ->with('sekolah:id_sekolah,nama_sekolah')
                      ->recent($limit)
+                     ->select('id_artikel', 'judul', 'tanggal', 'id_sekolah')
                      ->get();
     }
 
@@ -194,13 +187,14 @@ class ArtikelController extends Controller
      */
     public function detail($id)
     {
-        $artikel = Artikel::with('sekolah')->findOrFail($id);
+        $artikel = Artikel::with('sekolah:id_sekolah,nama_sekolah')->findOrFail($id);
         
         // Get related articles
         $relatedArticles = Artikel::published()
                                  ->where('id_artikel', '!=', $id)
                                  ->bySekolah($artikel->id_sekolah)
                                  ->recent(3)
+                                 ->select('id_artikel', 'judul', 'tanggal', 'id_sekolah')
                                  ->get();
 
         return view('frontend.berita-detail', compact('artikel', 'relatedArticles'));
@@ -211,7 +205,7 @@ class ArtikelController extends Controller
      */
     public function berita(Request $request)
     {
-        $query = Artikel::published()->with('sekolah');
+        $query = Artikel::published()->with('sekolah:id_sekolah,nama_sekolah');
 
         // Search functionality
         if ($request->has('search') && $request->search) {
@@ -227,8 +221,9 @@ class ArtikelController extends Controller
             $query->bySekolah($request->sekolah_id);
         }
 
-        $artikels = $query->orderBy('tanggal', 'desc')->paginate(9);
-        $sekolahs = Sekolah::all();
+        $artikels = $query->select('id_artikel', 'judul', 'isi', 'tanggal', 'gambar', 'id_sekolah')
+                         ->orderBy('tanggal', 'desc')->paginate(9);
+        $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
 
         return view('frontend.berita', compact('artikels', 'sekolahs'));
     }

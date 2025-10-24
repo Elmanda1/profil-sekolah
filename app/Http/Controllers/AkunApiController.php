@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response; // Using facade for consistent response
+use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Resources\AkunResource;
 
 class AkunApiController extends Controller
@@ -52,20 +53,8 @@ class AkunApiController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function changePassword(Request $request)
+    public function changePassword(ChangePasswordRequest $request)
     {
-        // Ensure the user is authenticated
-        if (!Auth::check()) {
-            return Response::json([
-                'status' => 'error',
-                'message' => 'Unauthenticated.'
-            ], 401);
-        }
-
-        $request->validate([
-            'current_password' => 'required',
-            'new_password' => 'required|string|min:8|confirmed',
-        ]);
 
         $user = Auth::user();
 
