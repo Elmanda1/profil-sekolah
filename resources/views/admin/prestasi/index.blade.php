@@ -40,8 +40,23 @@
                             </div>
                         @endif
 
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <form id="search-form">
+                                    <div class="input-group">
+                                        <input type="text" id="search-input" name="search" class="form-control" placeholder="Cari judul prestasi...">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary" type="submit" id="search-button">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
                         <div class="table-responsive">
-                            <table class="table table-bordered table-striped">
+                            <table class="table table-bordered table-striped" id="prestasi-table">
                                 <thead>
                                     <tr>
                                         <th>No</th>
@@ -74,19 +89,18 @@
                                                     <a href="{{ route('admin.prestasi.edit', $item->id_prestasi) }}" class="btn btn-warning btn-sm">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
-                                                    <form action="{{ route('admin.prestasi.destroy', $item->id_prestasi) }}" method="POST" style="display: inline;">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Yakin ingin menghapus?')">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </form>
+                                                    <a href="{{ route('admin.prestasi.edit', $item->id_prestasi) }}" class="btn btn-warning btn-sm">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete({{ $item->id_prestasi }})">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="5" class="text-center">Tidak ada data prestasi</td>
+                                            <td colspan="9" class="text-center">Tidak ada data prestasi</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -103,3 +117,84 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
+<script>
+function confirmDelete(id) {
+    if (confirm('Apakah Anda yakin ingin menghapus data prestasi ini?')) {
+        $.ajax({
+            url: '{{ route("api.v1.prestasi.destroy", "") }}/' + id,
+            type: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(result) {
+                // Do something with the result
+                location.reload();
+            },
+            error: function(err) {
+                // Do something with the error
+                alert('Gagal menghapus data prestasi.');
+            }
+        });
+    }
+}
+
+$('#search-form').on('submit', function(e) {
+    e.preventDefault();
+    let searchValue = $('#search-input').val();
+    fetchPrestasi(searchValue);
+});
+
+function fetchPrestasi(search = '') {
+    $.ajax({
+        url: '{{ route("api.v1.prestasi.index") }}',
+        type: 'GET',
+        data: {
+            search: search
+        },
+        success: function(result) {
+            let tableBody = $('#prestasi-table tbody');
+            tableBody.empty();
+            if (result.data.length > 0) {
+                $.each(result.data, function(index, item) {
+                    let row = `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${item.sekolah.nama_sekolah}</td>
+                            <td>${item.judul}</td>
+                            <td>${item.deskripsi ? item.deskripsi.substring(0, 50) : ''}</td>
+                            <td>${new Date(item.tanggal).toISOString().split('T')[0]}</td>
+                            <td>${item.tahun}</td>
+                            <td>${item.tingkat}</td>
+                            <td>${item.peringkat}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="/admin/prestasi/${item.id_prestasi}" class="btn btn-info btn-sm">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="/admin/prestasi/${item.id_prestasi}/edit" class="btn btn-warning btn-sm">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete(${item.id_prestasi})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    tableBody.append(row);
+                });
+            } else {
+                let row = `
+                    <tr>
+                        <td colspan="9" class="text-center">Tidak ada data prestasi</td>
+                    </tr>
+                `;
+                tableBody.append(row);
+            }
+        }
+    });
+}
+</script>
+@endpush

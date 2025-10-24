@@ -28,7 +28,7 @@
                     <div class="card-header">
                         <h3 class="card-title">Form Tambah Berita</h3>
                     </div>
-                    <form action="{{ route('admin.berita.store') }}" method="POST">
+                    <form id="create-artikel-form" action="{{ route('admin.berita.store') }}" method="POST">
                         @csrf
                         <div class="card-body">
                             <div class="form-group">
@@ -104,6 +104,36 @@
                 ['insert', ['link']],
                 ['view', ['fullscreen', 'codeview', 'help']]
             ]
+        });
+    });
+
+    $('#create-artikel-form').on('submit', function(e) {
+        e.preventDefault();
+
+        let formData = new FormData(this);
+
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(result) {
+                // Do something with the result
+                window.location.href = '{{ route("admin.berita.index") }}';
+            },
+            error: function(err) {
+                // Do something with the error
+                let errors = err.responseJSON.errors;
+                // Clear previous errors
+                $('.is-invalid').removeClass('is-invalid');
+                $('.invalid-feedback').remove();
+
+                $.each(errors, function(key, value) {
+                    $('#' + key).addClass('is-invalid');
+                    $('#' + key).after('<div class="invalid-feedback">' + value[0] + '</div>');
+                });
+            }
         });
     });
 </script>

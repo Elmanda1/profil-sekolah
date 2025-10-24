@@ -18,7 +18,7 @@
           <h3 class="card-title">Form Tambah Siswa</h3>
         </div>
         
-        <form action="{{ route('admin.siswa.store') }}" method="POST">
+        <form id="create-siswa-form" action="{{ route('admin.siswa.store') }}" method="POST">
           @csrf
           <div class="card-body">
             
@@ -166,6 +166,36 @@
                 } else {
                   accountFields.style.display = 'none';
                 }
+              });
+
+              $('#create-siswa-form').on('submit', function(e) {
+                  e.preventDefault();
+
+                  let formData = new FormData(this);
+
+                  $.ajax({
+                      url: $(this).attr('action'),
+                      type: 'POST',
+                      data: formData,
+                      processData: false,
+                      contentType: false,
+                      success: function(result) {
+                          // Do something with the result
+                          window.location.href = '{{ route("admin.siswa.index") }}';
+                      },
+                      error: function(err) {
+                          // Do something with the error
+                          let errors = err.responseJSON.errors;
+                          // Clear previous errors
+                          $('.is-invalid').removeClass('is-invalid');
+                          $('.invalid-feedback').remove();
+
+                          $.each(errors, function(key, value) {
+                              $('#' + key).addClass('is-invalid');
+                              $('#' + key).after('<div class="invalid-feedback">' + value[0] + '</div>');
+                          });
+                      }
+                  });
               });
             </script>
             @endpush

@@ -136,6 +136,51 @@ Route::prefix('admin')->name('admin.')->group(function () {
             // Tabungan API routes
             Route::get('/tabungan/history', [App\Http\Controllers\TabunganController::class, 'history'])->name('tabungan.history');
             Route::get('/tabungan/history/latest', [App\Http\Controllers\TabunganController::class, 'latestHistory'])->name('tabungan.history.latest');
+
+            // Students API routes
+            Route::get('/students', [SiswaController::class, 'index'])->name('students.index');
+            Route::post('/students', [SiswaController::class, 'store'])->name('students.store');
+            Route::get('/students/{siswa}', [SiswaController::class, 'show'])->name('students.show');
+            Route::put('/students/{siswa}', [SiswaController::class, 'update'])->name('students.update');
+            Route::delete('/students/{siswa}', [SiswaController::class, 'destroy'])->name('students.destroy');
+
+            // Transactions API routes
+            Route::get('/transactions', [App\Http\Controllers\TabunganController::class, 'history'])->name('transactions.index');
+
+            // Gurus API routes
+            Route::get('/gurus', [GuruController::class, 'index'])->name('gurus.index');
+            Route::post('/gurus', [GuruController::class, 'store'])->name('gurus.store');
+            Route::get('/gurus/{guru}', [GuruController::class, 'show'])->name('gurus.show');
+            Route::put('/gurus/{guru}', [GuruController::class, 'update'])->name('gurus.update');
+            Route::delete('/gurus/{guru}', [GuruController::class, 'destroy'])->name('gurus.destroy');
+
+            // Kelas API routes
+            Route::get('/kelas', [KelasController::class, 'index'])->name('kelas.index');
+            Route::post('/kelas', [KelasController::class, 'store'])->name('kelas.store');
+            Route::get('/kelas/{kelas}', [KelasController::class, 'show'])->name('kelas.show');
+            Route::put('/kelas/{kelas}', [KelasController::class, 'update'])->name('kelas.update');
+            Route::delete('/kelas/{kelas}', [KelasController::class, 'destroy'])->name('kelas.destroy');
+
+            // Jurusan API routes
+            Route::get('/jurusan', [JurusanController::class, 'index'])->name('jurusan.index');
+            Route::post('/jurusan', [JurusanController::class, 'store'])->name('jurusan.store');
+            Route::get('/jurusan/{jurusan}', [JurusanController::class, 'show'])->name('jurusan.show');
+            Route::put('/jurusan/{jurusan}', [JurusanController::class, 'update'])->name('jurusan.update');
+            Route::delete('/jurusan/{jurusan}', [JurusanController::class, 'destroy'])->name('jurusan.destroy');
+
+            // Artikel API routes
+            Route::get('/artikel', [ArtikelController::class, 'index'])->name('artikel.index');
+            Route::post('/artikel', [ArtikelController::class, 'store'])->name('artikel.store');
+            Route::get('/artikel/{artikel}', [ArtikelController::class, 'show'])->name('artikel.show');
+            Route::put('/artikel/{artikel}', [ArtikelController::class, 'update'])->name('artikel.update');
+            Route::delete('/artikel/{artikel}', [ArtikelController::class, 'destroy'])->name('artikel.destroy');
+
+            // Prestasi API routes
+            Route::get('/prestasi', [PrestasiController::class, 'index'])->name('prestasi.index');
+            Route::post('/prestasi', [PrestasiController::class, 'store'])->name('prestasi.store');
+            Route::get('/prestasi/{prestasi}', [PrestasiController::class, 'show'])->name('prestasi.show');
+            Route::put('/prestasi/{prestasi}', [PrestasiController::class, 'update'])->name('prestasi.update');
+            Route::delete('/prestasi/{prestasi}', [PrestasiController::class, 'destroy'])->name('prestasi.destroy');
         });
     });
 });

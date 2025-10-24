@@ -28,7 +28,7 @@
                     <div class="card-header">
                         <h3 class="card-title">Form Tambah Prestasi</h3>
                     </div>
-                    <form action="{{ route('admin.prestasi.store') }}" method="POST">
+                    <form id="create-prestasi-form" action="{{ route('admin.prestasi.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="card-body">
                             <div class="form-group">
@@ -154,6 +154,36 @@
     $(document).ready(function() {
         $('.select2').select2({
             theme: 'bootstrap4'
+        });
+    });
+
+    $('#create-prestasi-form').on('submit', function(e) {
+        e.preventDefault();
+
+        let formData = new FormData(this);
+
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(result) {
+                // Do something with the result
+                window.location.href = '{{ route("admin.prestasi.index") }}';
+            },
+            error: function(err) {
+                // Do something with the error
+                let errors = err.responseJSON.errors;
+                // Clear previous errors
+                $('.is-invalid').removeClass('is-invalid');
+                $('.invalid-feedback').remove();
+
+                $.each(errors, function(key, value) {
+                    $('#' + key).addClass('is-invalid');
+                    $('#' + key).after('<div class="invalid-feedback">' + value[0] + '</div>');
+                });
+            }
         });
     });
 </script>

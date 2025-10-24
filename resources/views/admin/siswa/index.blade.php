@@ -26,15 +26,15 @@
           <!-- Search Form -->
           <div class="row mb-3">
             <div class="col-md-6">
-              <form action="{{ route('admin.siswa.index') }}" method="GET">
+              <form id="search-form">
                 <div class="input-group">
-                  <input type="text" name="search" class="form-control" placeholder="Cari nama atau NIS siswa..." value="{{ $search }}">
+                  <input type="text" id="search-input" name="search" class="form-control" placeholder="Cari nama atau NIS siswa..." value="{{ $search }}">
                   <div class="input-group-append">
-                    <button class="btn btn-outline-secondary" type="submit">
+                    <button class="btn btn-outline-secondary" type="submit" id="search-button">
                       <i class="fas fa-search"></i>
                     </button>
                     @if($search)
-                      <a href="{{ route('admin.siswa.index') }}" class="btn btn-outline-danger">
+                      <a href="{{ route('admin.siswa.index') }}" class="btn btn-outline-danger" id="clear-search-button">
                         <i class="fas fa-times"></i>
                       </a>
                     @endif
@@ -46,7 +46,7 @@
 
           <!-- Table -->
           <div class="table-responsive">
-            <table class="table table-bordered table-striped">
+            <table class="table table-bordered table-striped" id="siswa-table">
               <thead>
                 <tr>
                   <th width="5%">No</th>
@@ -88,11 +88,7 @@
                         </button>
                       </div>
 
-                      <!-- Form Delete -->
-                      <form id="delete-form-{{ $item->id_siswa }}" action="{{ route('admin.siswa.destroy', $item->id_siswa) }}" method="POST" style="display: none;">
-                        @csrf
-                        @method('DELETE')
-                      </form>
+
                     </td>
                   </tr>
                 @empty
@@ -133,8 +129,81 @@
 <script>
 function confirmDelete(id) {
     if (confirm('Apakah Anda yakin ingin menghapus data siswa ini?')) {
-        document.getElementById('delete-form-' + id).submit();
+        $.ajax({
+            url: '{{ route("api.v1.students.destroy", "") }}/' + id,
+            type: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(result) {
+                // Do something with the result
+                location.reload();
+            },
+            error: function(err) {
+                // Do something with the error
+                alert('Gagal menghapus data siswa.');
+            }
+        });
     }
+}
+
+$('#search-form').on('submit', function(e) {
+    e.preventDefault();
+    let searchValue = $('#search-input').val();
+    fetchStudents(searchValue);
+});
+
+function fetchStudents(search = '') {
+    $.ajax({
+        url: '{{ route("api.v1.students.index") }}',
+        type: 'GET',
+        data: {
+            search: search
+        },
+        success: function(result) {
+            let tableBody = $('#siswa-table tbody');
+            tableBody.empty();
+            if (result.data.length > 0) {
+                $.each(result.data, function(index, item) {
+                    let row = `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${item.nisn}</td>
+                            <td>${item.nama_siswa}</td>
+                            <td>
+                                ${item.jenis_kelamin == 'Laki-laki' ? '<span class="badge badge-info">Laki-laki</span>' : (item.jenis_kelamin == 'Perempuan' ? '<span class="badge badge-pink">Perempuan</span>' : '-')}
+                            </td>
+                            <td>${item.tanggal_lahir ? new Date(item.tanggal_lahir).toISOString().split('T')[0] : '-'}</td>
+                            <td>${item.alamat ? item.alamat.substring(0, 50) : '-'}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="/admin/siswa/${item.id_siswa}" class="btn btn-info btn-sm" title="Detail">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="/admin/siswa/${item.id_siswa}/edit" class="btn btn-warning btn-sm" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-danger btn-sm" title="Hapus" onclick="confirmDelete(${item.id_siswa})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    tableBody.append(row);
+                });
+            } else {
+                let row = `
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">
+                            ${search ? `Tidak ada data siswa yang cocok dengan pencarian "${search}"` : 'Belum ada data siswa'}
+                        </td>
+                    </tr>
+                `;
+                tableBody.append(row);
+            }
+        }
+    });
 }
 </script>
 @endpush

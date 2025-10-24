@@ -18,7 +18,7 @@
           <h3 class="card-title">Form Edit Siswa</h3>
         </div>
         
-        <form action="{{ route('admin.siswa.update', $siswa->id_siswa) }}" method="POST">
+        <form id="edit-siswa-form" action="{{ route('admin.siswa.update', $siswa->id_siswa) }}" method="POST">
           @csrf
           @method('PUT')
           <div class="card-body">
@@ -171,7 +171,39 @@
           </table>
         </div>
       </div>
-    </div>
-  </div>
-</div>
-@endsection
+    @endsection
+    
+    @push('scripts')
+    <script>
+    $('#edit-siswa-form').on('submit', function(e) {
+        e.preventDefault();
+    
+        let formData = new FormData(this);
+        formData.append('_method', 'PUT');
+    
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(result) {
+                // Do something with the result
+                window.location.href = '{{ route("admin.siswa.index") }}';
+            },
+            error: function(err) {
+                // Do something with the error
+                let errors = err.responseJSON.errors;
+                // Clear previous errors
+                $('.is-invalid').removeClass('is-invalid');
+                $('.invalid-feedback').remove();
+    
+                $.each(errors, function(key, value) {
+                    $('#' + key).addClass('is-invalid');
+                    $('#' + key).after('<div class="invalid-feedback">' + value[0] + '</div>');
+                });
+            }
+        });
+    });
+    </script>
+    @endpush
