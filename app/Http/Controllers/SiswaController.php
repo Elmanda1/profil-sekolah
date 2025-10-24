@@ -75,6 +75,8 @@ class SiswaController extends Controller
             'no_telp' => 'required|string|max:20',
             'alamat' => 'required|string',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
+            'tanggal_lahir' => 'nullable|date',
             'id_kelas' => 'required|exists:tb_kelas,id_kelas',
             'tahun_ajaran' => 'required|string|max:20',
             'semester' => 'required|in:1,2',
@@ -169,7 +171,9 @@ class SiswaController extends Controller
             'email' => 'required|email|unique:tb_siswa,email,' . $siswa->id_siswa . ',id_siswa',
             'no_telp' => 'required|string|max:20',
             'alamat' => 'required|string',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
+            'tanggal_lahir' => 'nullable|date'
         ]);
 
         try {

@@ -21,8 +21,8 @@ class Prestasi extends Model
         'tahun'
     ];
 
-    protected $dates = [
-        'tanggal'
+    protected $casts = [
+        'tanggal' => 'date',
     ];
 
     public function sekolah()

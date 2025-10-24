@@ -152,9 +152,10 @@ class GuruController extends Controller
     public function edit(Guru $guru)
     {
         $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
-        $guru->load('akun');
+        $mapels = Mapel::all();
+        $guru->load('akun', 'mapel');
         
-        return view('admin.guru.edit', compact('guru', 'sekolahs'));
+        return view('admin.guru.edit', compact('guru', 'sekolahs', 'mapels'));
     }
 
     /**
@@ -169,7 +170,9 @@ class GuruController extends Controller
             'email' => ['required', 'email', 'max:255', Rule::unique('tb_guru', 'email')->ignore($guru->id_guru, 'id_guru')],
             'no_telp' => 'nullable|string|max:20',
             'alamat' => 'nullable|string|max:1000',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048'
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'mapel' => 'nullable|array',
+            'mapel.*' => 'exists:tb_mapel,id_mapel'
         ]);
 
         DB::beginTransaction();
@@ -194,6 +197,12 @@ class GuruController extends Controller
 
             $guru->update($validated);
 
+            // Sync mapel
+            if ($request->has('mapel')) {
+                $guru->mapel()->sync($request->mapel);
+            } else {
+                $guru->mapel()->detach();
+            }
             DB::commit();
 
             return redirect()->route('guru.index')

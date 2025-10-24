@@ -65,13 +65,15 @@
                     <td>{{ $item->nisn }}</td>
                     <td>{{ $item->nama_siswa }}</td>
                     <td>
-                      @if($item->jenis_kelamin == 'L')
+                      @if($item->jenis_kelamin == 'Laki-laki')
                         <span class="badge badge-info">Laki-laki</span>
-                      @else
+                      @elseif($item->jenis_kelamin == 'Perempuan')
                         <span class="badge badge-pink">Perempuan</span>
+                      @else
+                        -
                       @endif
                     </td>
-                    <td>{{ $item->tanggal_lahir_format }}</td>
+                    <td>{{ $item->tanggal_lahir->format('Y-m-d') ?? '-' }}</td>
                     <td>{{ Str::limit($item->alamat, 50) ?? '-' }}</td>
                     <td>
                       <div class="btn-group">

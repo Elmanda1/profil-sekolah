@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('adminlte::page')
 
 @section('title', 'Edit Prestasi')
 
@@ -33,29 +33,47 @@
                         @method('PUT')
                         <div class="card-body">
                             <div class="form-group">
-                                <label for="id_siswa">Siswa</label>
-                                <select class="form-control select2 @error('id_siswa') is-invalid @enderror" 
-                                        id="id_siswa" name="id_siswa">
-                                    <option value="">Pilih Siswa</option>
-                                    @foreach($siswa as $item)
-                                        <option value="{{ $item->id_siswa }}" 
-                                                {{ old('id_siswa', $prestasi->id_siswa) == $item->id_siswa ? 'selected' : '' }}>
-                                            {{ $item->nama }}
+                                <label for="id_sekolah">Sekolah</label>
+                                <select class="form-control select2 @error('id_sekolah') is-invalid @enderror" 
+                                        id="id_sekolah" name="id_sekolah">
+                                    <option value="">Pilih Sekolah</option>
+                                    @foreach($sekolahs as $sekolah)
+                                        <option value="{{ $sekolah->id_sekolah }}" {{ old('id_sekolah', $prestasi->id_sekolah) == $sekolah->id_sekolah ? 'selected' : '' }}>
+                                            {{ $sekolah->nama_sekolah }}
                                         </option>
                                     @endforeach
                                 </select>
-                                @error('id_siswa')
+                                @error('id_sekolah')
                                     <span class="invalid-feedback">{{ $message }}</span>
                                 @enderror
                             </div>
 
                             <div class="form-group">
-                                <label for="nama_prestasi">Nama Prestasi</label>
-                                <input type="text" class="form-control @error('nama_prestasi') is-invalid @enderror" 
-                                       id="nama_prestasi" name="nama_prestasi" 
-                                       value="{{ old('nama_prestasi', $prestasi->nama_prestasi) }}" 
-                                       placeholder="Masukkan nama prestasi">
-                                @error('nama_prestasi')
+                                <label for="judul">Judul Prestasi</label>
+                                <input type="text" class="form-control @error('judul') is-invalid @enderror" 
+                                       id="judul" name="judul" 
+                                       value="{{ old('judul', $prestasi->judul) }}" 
+                                       placeholder="Masukkan judul prestasi">
+                                @error('judul')
+                                    <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            <div class="form-group">
+                                <label for="tanggal">Tanggal</label>
+                                <input type="date" class="form-control @error('tanggal') is-invalid @enderror" 
+                                       id="tanggal" name="tanggal" value="{{ old('tanggal', $prestasi->tanggal->format('Y-m-d')) }}">
+                                @error('tanggal')
+                                    <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            <div class="form-group">
+                                <label for="deskripsi">Deskripsi</label>
+                                <textarea class="form-control @error('deskripsi') is-invalid @enderror" 
+                                          id="deskripsi" name="deskripsi" rows="3" 
+                                          placeholder="Masukkan deskripsi prestasi">{{ old('deskripsi', $prestasi->deskripsi) }}</textarea>
+                                @error('deskripsi')
                                     <span class="invalid-feedback">{{ $message }}</span>
                                 @enderror
                             </div>
@@ -68,6 +86,58 @@
                                 @error('tahun')
                                     <span class="invalid-feedback">{{ $message }}</span>
                                 @enderror
+                            </div>
+
+                            <div class="form-group">
+                                <label for="tingkat">Tingkat</label>
+                                <select class="form-control @error('tingkat') is-invalid @enderror" 
+                                        id="tingkat" name="tingkat">
+                                    <option value="">-- Pilih Tingkat --</option>
+                                    @foreach($tingkats as $tingkat)
+                                        <option value="{{ $tingkat }}" {{ old('tingkat', $prestasi->tingkat) == $tingkat ? 'selected' : '' }}>
+                                            {{ $tingkat }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('tingkat')
+                                    <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            <div class="form-group">
+                                <label for="peringkat">Peringkat</label>
+                                <select class="form-control @error('peringkat') is-invalid @enderror" 
+                                        id="peringkat" name="peringkat">
+                                    <option value="">-- Pilih Peringkat --</option>
+                                    @foreach($peringkats as $peringkat)
+                                        <option value="{{ $peringkat }}" {{ old('peringkat', $prestasi->peringkat) == $peringkat ? 'selected' : '' }}>
+                                            {{ $peringkat }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('peringkat')
+                                    <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            <div class="form-group">
+                                <label for="gambar">Gambar</label>
+                                <div class="input-group">
+                                    <div class="custom-file">
+                                        <input type="file" class="custom-file-input @error('gambar') is-invalid @enderror" 
+                                               id="gambar" name="gambar">
+                                        <label class="custom-file-label" for="gambar">Pilih gambar</label>
+                                    </div>
+                                </div>
+                                @error('gambar')
+                                    <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror
+
+                                @if($prestasi->gambar)
+                                    <div class="mt-2">
+                                        <img src="{{ asset('photos/' . $prestasi->gambar) }}" alt="Gambar Prestasi" style="max-width: 200px;">
+                                    </div>
+                                @endif
                             </div>
                         </div>
 

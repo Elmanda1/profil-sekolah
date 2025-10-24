@@ -45,9 +45,13 @@
                                 <thead>
                                     <tr>
                                         <th>No</th>
-                                        <th>Nama Siswa</th>
+                                        <th>Sekolah</th>
                                         <th>Nama Prestasi</th>
+                                        <th>Deskripsi</th>
+                                        <th>Tanggal</th>
                                         <th>Tahun</th>
+                                        <th>Tingkat</th>
+                                        <th>Peringkat</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
@@ -55,9 +59,13 @@
                                     @forelse($prestasis as $key => $item)
                                         <tr>
                                             <td>{{ $prestasis->firstItem() + $key }}</td>
-                                            <td>{{ $item->siswa->nama ?? 'N/A' }}</td>
-                                            <td>{{ $item->nama_prestasi }}</td>
+                                            <td>{{ $item->sekolah->nama_sekolah ?? 'N/A' }}</td>
+                                            <td>{{ $item->judul }}</td>
+                                            <td>{{ Str::limit($item->deskripsi, 50) }}</td>
+                                            <td>{{ $item->tanggal->format('Y-m-d') }}</td>
                                             <td>{{ $item->tahun ?? '-' }}</td>
+                                            <td>{{ $item->tingkat }}</td>
+                                            <td>{{ $item->peringkat }}</td>
                                             <td>
                                                 <div class="btn-group">
                                                     <a href="{{ route('admin.prestasi.show', $item->id_prestasi) }}" class="btn btn-info btn-sm">

@@ -20,7 +20,15 @@ class Siswa extends Model
         'email',
         'no_telp',
         'alamat',
-        'foto'
+        'foto',
+        'jenis_kelamin',
+        'tanggal_lahir'
+    ];
+
+    protected $casts = [
+        'id_siswa' => 'integer',
+        'id_sekolah' => 'integer',
+        'tanggal_lahir' => 'date'
     ];
 
     // Relationships

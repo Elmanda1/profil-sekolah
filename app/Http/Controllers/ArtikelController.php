@@ -74,11 +74,9 @@ class ArtikelController extends Controller
                 $filename = time() . '_' . Str::slug($request->judul) . '.' . $file->getClientOriginalExtension();
                 $file->move(public_path('photos'), $filename);
                 $validated['gambar'] = $filename;
-            }
-
             Artikel::create($validated);
 
-            return redirect()->route('admin.berita.index')
+            return redirect()->route('admin.berita.index');
         } catch (\Exception $e) {
             return redirect()->back()
                            ->withInput()
@@ -133,7 +131,7 @@ class ArtikelController extends Controller
 
             $artikel->update($validated);
 
-            return redirect()->route('admin.berita.index')
+            return redirect()->route('admin.berita.index');
         } catch (\Exception $e) {
             return redirect()->back()
                            ->withInput()

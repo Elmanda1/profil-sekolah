@@ -23,11 +23,11 @@
           <div class="card-body">
             
             <div class="form-group">
-              <label for="nis">NIS <span class="text-danger">*</span></label>
-              <input type="text" class="form-control @error('nis') is-invalid @enderror" 
-                     id="nis" name="nis" value="{{ old('nis') }}" 
-                     placeholder="Masukkan NIS siswa">
-              @error('nis')
+              <label for="nisn">NISN <span class="text-danger">*</span></label>
+              <input type="text" class="form-control @error('nisn') is-invalid @enderror" 
+                     id="nisn" name="nisn" value="{{ old('nisn') }}" 
+                     placeholder="Masukkan NISN siswa">
+              @error('nisn')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
             </div>
@@ -47,8 +47,8 @@
               <select class="form-control @error('jenis_kelamin') is-invalid @enderror" 
                       id="jenis_kelamin" name="jenis_kelamin">
                 <option value="">-- Pilih Jenis Kelamin --</option>
-                <option value="L" {{ old('jenis_kelamin') == 'L' ? 'selected' : '' }}>Laki-laki</option>
-                <option value="P" {{ old('jenis_kelamin') == 'P' ? 'selected' : '' }}>Perempuan</option>
+                <option value="Laki-laki" {{ old('jenis_kelamin') == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
+                <option value="Perempuan" {{ old('jenis_kelamin') == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
               </select>
               @error('jenis_kelamin')
                 <div class="invalid-feedback">{{ $message }}</div>
@@ -73,6 +73,102 @@
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
             </div>
+
+            <div class="form-group">
+              <label for="id_sekolah">Sekolah <span class="text-danger">*</span></label>
+              <select class="form-control @error('id_sekolah') is-invalid @enderror" 
+                      id="id_sekolah" name="id_sekolah">
+                <option value="">-- Pilih Sekolah --</option>
+                @foreach($sekolahs as $sekolah)
+                  <option value="{{ $sekolah->id_sekolah }}" {{ old('id_sekolah') == $sekolah->id_sekolah ? 'selected' : '' }}>
+                    {{ $sekolah->nama_sekolah }}
+                  </option>
+                @endforeach
+              </select>
+              @error('id_sekolah')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="form-group">
+              <label for="id_kelas">Kelas <span class="text-danger">*</span></label>
+              <select class="form-control @error('id_kelas') is-invalid @enderror" 
+                      id="id_kelas" name="id_kelas">
+                <option value="">-- Pilih Kelas --</option>
+                @foreach($kelass as $kelas)
+                  <option value="{{ $kelas->id_kelas }}" {{ old('id_kelas') == $kelas->id_kelas ? 'selected' : '' }}>
+                    {{ $kelas->nama_kelas }} ({{ $kelas->jurusan->nama_jurusan ?? '-' }})
+                  </option>
+                @endforeach
+              </select>
+              @error('id_kelas')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="form-group">
+              <label for="tahun_ajaran">Tahun Ajaran <span class="text-danger">*</span></label>
+              <input type="text" class="form-control @error('tahun_ajaran') is-invalid @enderror" 
+                     id="tahun_ajaran" name="tahun_ajaran" value="{{ old('tahun_ajaran') }}" 
+                     placeholder="Contoh: 2023/2024">
+              @error('tahun_ajaran')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="form-group">
+              <label for="semester">Semester <span class="text-danger">*</span></label>
+              <select class="form-control @error('semester') is-invalid @enderror" 
+                      id="semester" name="semester">
+                <option value="">-- Pilih Semester --</option>
+                <option value="1" {{ old('semester') == '1' ? 'selected' : '' }}>Ganjil</option>
+                <option value="2" {{ old('semester') == '2' ? 'selected' : '' }}>Genap</option>
+              </select>
+              @error('semester')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="form-group">
+              <div class="custom-control custom-checkbox">
+                <input type="checkbox" class="custom-control-input" id="create_account" name="create_account" value="1" {{ old('create_account') ? 'checked' : '' }}>
+                <label class="custom-control-label" for="create_account">Buat Akun Pengguna</label>
+              </div>
+            </div>
+
+            <div id="account_fields" style="display: {{ old('create_account') ? 'block' : 'none' }};">
+              <div class="form-group">
+                <label for="username">Username <span class="text-danger">*</span></label>
+                <input type="text" class="form-control @error('username') is-invalid @enderror" 
+                       id="username" name="username" value="{{ old('username') }}" 
+                       placeholder="Masukkan username">
+                @error('username')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+              </div>
+
+              <div class="form-group">
+                <label for="password">Password <span class="text-danger">*</span></label>
+                <input type="password" class="form-control @error('password') is-invalid @enderror" 
+                       id="password" name="password" placeholder="Masukkan password">
+                @error('password')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+              </div>
+            </div>
+
+            @push('scripts')
+            <script>
+              document.getElementById('create_account').addEventListener('change', function() {
+                var accountFields = document.getElementById('account_fields');
+                if (this.checked) {
+                  accountFields.style.display = 'block';
+                } else {
+                  accountFields.style.display = 'none';
+                }
+              });
+            </script>
+            @endpush
 
           </div>
 

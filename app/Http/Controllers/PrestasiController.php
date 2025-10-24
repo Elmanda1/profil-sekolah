@@ -15,7 +15,7 @@ class PrestasiController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Prestasi::with([ 'sekolah']);
+        $query = Prestasi::with([ 'sekolah', 'siswa']);
 
         // Filter by sekolah
         if ($request->has('sekolah_id') && $request->sekolah_id) {
@@ -65,19 +65,19 @@ class PrestasiController extends Controller
     public function create()
     {
         $sekolahs = Sekolah::all();
-        $siswas = Siswa::all();
         $tingkats = ['Sekolah', 'Kabupaten/Kota', 'Provinsi', 'Nasional', 'Internasional'];
         $peringkats = ['Juara 1', 'Juara 2', 'Juara 3', 'Harapan 1', 'Harapan 2', 'Harapan 3', 'Finalis', 'Peserta'];
 
-        return view('admin.prestasi.create', compact('sekolahs', 'siswas', 'tingkats', 'peringkats'));
+        return view('admin.prestasi.create', compact('sekolahs', 'tingkats', 'peringkats'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
+    public function store(Request $request)
+    {
         $validated = $request->validate([
             'id_sekolah' => 'required|exists:tb_sekolah,id_sekolah',
-            'id_siswa' => 'required|exists:tb_siswa,id_siswa',
             'judul' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
             'tanggal' => 'required|date',
@@ -91,7 +91,7 @@ class PrestasiController extends Controller
             // Handle image upload
             if ($request->hasFile('gambar')) {
                 $file = $request->file('gambar');
-                $filename = time() . '_' . Str::slug($request->nama_lomba) . '.' . $file->getClientOriginalExtension();
+                $filename = time() . '_' . Str::slug($request->judul) . '.' . $file->getClientOriginalExtension();
                 $file->move(public_path('photos'), $filename);
                 $validated['gambar'] = $filename;
             }
@@ -135,7 +135,6 @@ class PrestasiController extends Controller
     {
         $validated = $request->validate([
             'id_sekolah' => 'required|exists:tb_sekolah,id_sekolah',
-            'id_siswa' => 'required|exists:tb_siswa,id_siswa',
             'judul' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
             'tanggal' => 'required|date',
@@ -154,7 +153,7 @@ class PrestasiController extends Controller
                 }
 
                 $file = $request->file('gambar');
-                $filename = time() . '_' . Str::slug($request->nama_lomba) . '.' . $file->getClientOriginalExtension();
+                $filename = time() . '_' . Str::slug($request->judul) . '.' . $file->getClientOriginalExtension();
                 $file->move(public_path('photos'), $filename);
                 $validated['gambar'] = $filename;
             }
