@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Guru;
 use App\Models\Sekolah;
 use App\Models\Akun;
+use App\Models\Mapel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -20,7 +21,7 @@ class GuruController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Guru::with(['sekolah', 'akun']);
+        $query = Guru::with(['sekolah', 'akun', 'mapel']);
 
         // Filter by sekolah
         if ($request->filled('sekolah_id')) {
@@ -49,8 +50,9 @@ class GuruController extends Controller
 
         $gurus = $query->paginate(15)->withQueryString();
         $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
+        $search = $request->search;
 
-        return view('admin.guru.index', compact('gurus', 'sekolahs'));
+        return view('admin.guru.index', compact('gurus', 'sekolahs', 'search'));
     }
 
     /**
@@ -59,7 +61,8 @@ class GuruController extends Controller
     public function create()
     {
         $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
-        return view('admin.guru.create', compact('sekolahs'));
+        $mapels = Mapel::all();
+        return view('admin.guru.create', compact('sekolahs', 'mapels'));
     }
 
     /**
@@ -77,7 +80,9 @@ class GuruController extends Controller
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'create_account' => 'boolean',
             'username' => 'required_if:create_account,true|string|min:3|max:50|unique:tb_akun,username',
-            'password' => 'required_if:create_account,true|string|min:8|confirmed'
+            'password' => 'required_if:create_account,true|string|min:8|confirmed',
+            'mapel' => 'nullable|array',
+            'mapel.*' => 'exists:tb_mapel,id_mapel'
         ]);
 
         DB::beginTransaction();
@@ -95,6 +100,11 @@ class GuruController extends Controller
 
             // Create guru
             $guru = Guru::create($validated);
+
+            // Attach mapel
+            if ($request->has('mapel')) {
+                $guru->mapel()->attach($request->mapel);
+            }
 
             // Create account if requested
             if ($request->boolean('create_account')) {
@@ -355,10 +365,8 @@ class GuruController extends Controller
         }
 
         $gurus = $query->orderBy('nama_guru')
-                      ->paginate(12)
-                      ->withQueryString();
-
-        return GuruResource::collection($gurus);
+                      ->paginate(12);
+        return view('frontend.profilPengajar', compact('gurus'));
     }
 
     /**

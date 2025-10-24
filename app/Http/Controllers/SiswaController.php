@@ -20,7 +20,7 @@ class SiswaController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Siswa::with(['sekolah', 'akun', 'kelasTerakhir']);
+        $query = Siswa::with(['sekolah', 'akun']);
 
         // Filter by sekolah
         if ($request->has('sekolah_id') && $request->sekolah_id) {
@@ -46,8 +46,9 @@ class SiswaController extends Controller
         $siswas = $query->orderBy('nama_siswa')->paginate(10);
         $sekolahs = Sekolah::all();
         $kelass = Kelas::with('jurusan', 'jenisKelas')->get();
+        $search = $request->search;
 
-        return view('admin.siswa.index', compact('siswas', 'sekolahs', 'kelass'));
+        return view('admin.siswa.index', compact('siswas', 'sekolahs', 'kelass', 'search'));
     }
 
     /**

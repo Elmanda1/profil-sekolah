@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('adminlte::page')
 
 @section('title', 'Tambah Prestasi')
 
@@ -36,9 +36,9 @@
                                 <select class="form-control select2 @error('id_siswa') is-invalid @enderror" 
                                         id="id_siswa" name="id_siswa">
                                     <option value="">Pilih Siswa</option>
-                                    @foreach($siswa as $item)
+                                    @foreach($siswas as $item)
                                         <option value="{{ $item->id_siswa }}" {{ old('id_siswa') == $item->id_siswa ? 'selected' : '' }}>
-                                            {{ $item->nama }}
+                                            {{ $item->nama_siswa }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -48,10 +48,10 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="nama_prestasi">Nama Prestasi</label>
-                                <input type="text" class="form-control @error('nama_prestasi') is-invalid @enderror" 
-                                       id="nama_prestasi" name="nama_prestasi" value="{{ old('nama_prestasi') }}" 
-                                       placeholder="Masukkan nama prestasi">
+                                <label for="judul">Judul Prestasi</label>
+                                <input type="text" class="form-control @error('judul') is-invalid @enderror" 
+                                       id="judul" name="judul" value="{{ old('judul') }}" 
+                                       placeholder="Masukkan judul prestasi">
                                 @error('nama_prestasi')
                                     <span class="invalid-feedback">{{ $message }}</span>
                                 @enderror

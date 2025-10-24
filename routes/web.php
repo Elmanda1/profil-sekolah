@@ -49,7 +49,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->get();
         
         $beritaRecent = \App\Models\Artikel::with('sekolah')
-            ->orderBy('id_berita', 'desc')
+            ->orderBy('id_artikel', 'desc')
             ->take(5)
             ->get();
         
@@ -57,6 +57,19 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->orderBy('id_prestasi', 'desc')
             ->take(5)
             ->get();
+
+        // Data for Pie Chart (Siswa Gender)
+        $siswaGender = \App\Models\Siswa::selectRaw('jenis_kelamin, count(*) as total')
+            ->groupBy('jenis_kelamin')
+            ->pluck('total', 'jenis_kelamin')
+            ->all();
+
+        // Data for Bar Chart (Prestasi per Year)
+        $prestasiPerYear = \App\Models\Prestasi::selectRaw('tahun, count(*) as total')
+            ->groupBy('tahun')
+            ->orderBy('tahun', 'asc')
+            ->pluck('total', 'tahun')
+            ->all();
         
         return view('admin.dashboard', compact(
             'totalSiswa',
@@ -68,7 +81,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
             'siswaRecent',
             'guruRecent',
             'beritaRecent',
-            'prestasiRecent'
+            'prestasiRecent',
+            'siswaGender',
+            'prestasiPerYear'
         ));
     })->name('dashboard');
 

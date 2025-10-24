@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Prestasi;
 use App\Models\Sekolah;
+use App\Models\Siswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -64,22 +65,23 @@ class PrestasiController extends Controller
     public function create()
     {
         $sekolahs = Sekolah::all();
+        $siswas = Siswa::all();
         $tingkats = ['Sekolah', 'Kabupaten/Kota', 'Provinsi', 'Nasional', 'Internasional'];
         $peringkats = ['Juara 1', 'Juara 2', 'Juara 3', 'Harapan 1', 'Harapan 2', 'Harapan 3', 'Finalis', 'Peserta'];
 
-        return view('admin.prestasi.create', compact('sekolahs', 'tingkats', 'peringkats'));
+        return view('admin.prestasi.create', compact('sekolahs', 'siswas', 'tingkats', 'peringkats'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
         $validated = $request->validate([
             'id_sekolah' => 'required|exists:tb_sekolah,id_sekolah',
-            'nama_lomba' => 'required|string|max:255',
+            'id_siswa' => 'required|exists:tb_siswa,id_siswa',
+            'judul' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
             'tanggal' => 'required|date',
+            'tahun' => 'required|integer|min:2000',
             'tingkat' => 'required|in:Sekolah,Kabupaten/Kota,Provinsi,Nasional,Internasional',
             'peringkat' => 'required|in:Juara 1,Juara 2,Juara 3,Harapan 1,Harapan 2,Harapan 3,Finalis,Peserta',
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
@@ -133,9 +135,11 @@ class PrestasiController extends Controller
     {
         $validated = $request->validate([
             'id_sekolah' => 'required|exists:tb_sekolah,id_sekolah',
-            'nama_lomba' => 'required|string|max:255',
+            'id_siswa' => 'required|exists:tb_siswa,id_siswa',
+            'judul' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
             'tanggal' => 'required|date',
+            'tahun' => 'required|integer|min:2000',
             'tingkat' => 'required|in:Sekolah,Kabupaten/Kota,Provinsi,Nasional,Internasional',
             'peringkat' => 'required|in:Juara 1,Juara 2,Juara 3,Harapan 1,Harapan 2,Harapan 3,Finalis,Peserta',
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'

@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('adminlte::page')
 
 @section('title', 'Data Prestasi')
 
@@ -52,9 +52,9 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($prestasi as $key => $item)
+                                    @forelse($prestasis as $key => $item)
                                         <tr>
-                                            <td>{{ $prestasi->firstItem() + $key }}</td>
+                                            <td>{{ $prestasis->firstItem() + $key }}</td>
                                             <td>{{ $item->siswa->nama ?? 'N/A' }}</td>
                                             <td>{{ $item->nama_prestasi }}</td>
                                             <td>{{ $item->tahun ?? '-' }}</td>
@@ -86,7 +86,7 @@
                         </div>
 
                         <div class="mt-3">
-                            {{ $prestasi->links() }}
+                            {{ $prestasis->links() }}
                         </div>
                     </div>
                 </div>

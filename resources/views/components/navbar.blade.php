@@ -11,6 +11,7 @@
         </div>
         <a href='/berita' class='flex gap-2 text-lg cursor-pointer text-amber-950'><span>L</span>Berita</a>
         <a href='/prestasi' class='flex gap-2 text-lg cursor-pointer text-amber-950'><span>L</span>Prestasi</a>
+        <a href='{{ route("admin.dashboard") }}' class='flex gap-2 text-lg cursor-pointer text-green-600 font-bold'><span><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg></span>Admin</a>
     </ul>
 </div>
 <script>

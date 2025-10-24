@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('adminlte::page')
 
 @section('title', 'Tambah Guru')
 @section('page-title', 'Tambah Guru')
@@ -42,24 +42,18 @@
               @enderror
             </div>
 
-            <div class="form-group">
-              <label for="jenis_kelamin">Jenis Kelamin <span class="text-danger">*</span></label>
-              <select class="form-control @error('jenis_kelamin') is-invalid @enderror" 
-                      id="jenis_kelamin" name="jenis_kelamin">
-                <option value="">-- Pilih Jenis Kelamin --</option>
-                <option value="L" {{ old('jenis_kelamin') == 'L' ? 'selected' : '' }}>Laki-laki</option>
-                <option value="P" {{ old('jenis_kelamin') == 'P' ? 'selected' : '' }}>Perempuan</option>
-              </select>
-              @error('jenis_kelamin')
-                <div class="invalid-feedback">{{ $message }}</div>
-              @enderror
-            </div>
 
             <div class="form-group">
-              <label for="mata_pelajaran">Mata Pelajaran</label>
-              <input type="string" class="form-control @error('mata_pelajaran') is-invalid @enderror" 
-                     id="mata_pelajaran" name="mata_pelajaran" value="{{ old('mata_pelajaran') }}">
-              @error('mata_pelajaran')
+              <label for="mapel">Mata Pelajaran</label>
+              <select class="form-control select2 @error('mapel') is-invalid @enderror" 
+                      id="mapel" name="mapel[]" multiple>
+                @foreach($mapels as $mapel)
+                  <option value="{{ $mapel->id_mapel }}" {{ in_array($mapel->id_mapel, old('mapel', [])) ? 'selected' : '' }}>
+                    {{ $mapel->nama_mapel }}
+                  </option>
+                @endforeach
+              </select>
+              @error('mapel')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
             </div>

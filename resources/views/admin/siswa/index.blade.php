@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('adminlte::page')
 
 @section('title', 'Data Siswa')
 @section('page-title', 'Data Siswa')
@@ -50,7 +50,7 @@
               <thead>
                 <tr>
                   <th width="5%">No</th>
-                  <th>NIS</th>
+                  <th>NISN</th>
                   <th>Nama Siswa</th>
                   <th>Jenis Kelamin</th>
                   <th>Tanggal Lahir</th>
@@ -59,10 +59,10 @@
                 </tr>
               </thead>
               <tbody>
-                @forelse($siswa as $index => $item)
+                @forelse($siswas as $index => $item)
                   <tr>
-                    <td>{{ $siswa->firstItem() + $index }}</td>
-                    <td>{{ $item->nis }}</td>
+                    <td>{{ $siswas->firstItem() + $index }}</td>
+                    <td>{{ $item->nisn }}</td>
                     <td>{{ $item->nama_siswa }}</td>
                     <td>
                       @if($item->jenis_kelamin == 'L')
@@ -109,16 +109,16 @@
           </div>
 
           <!-- Pagination -->
-          @if($siswa->hasPages())
+          @if($siswas->hasPages())
             <div class="d-flex justify-content-center">
-              {{ $siswa->appends(request()->query())->links() }}
+              {{ $siswas->appends(request()->query())->links() }}
             </div>
           @endif
         </div>
         
         <div class="card-footer">
           <small class="text-muted">
-            Menampilkan {{ $siswa->firstItem() ?? 0 }} - {{ $siswa->lastItem() ?? 0 }} dari {{ $siswa->total() }} data siswa
+            Menampilkan {{ $siswas->firstItem() ?? 0 }} - {{ $siswas->lastItem() ?? 0 }} dari {{ $siswas->total() }} data siswa
           </small>
         </div>
       </div>

@@ -42,7 +42,7 @@ class ArtikelController extends Controller
         $artikels = $query->orderBy('tanggal', 'desc')->paginate(10);
         $sekolahs = Sekolah::all();
 
-        return view('admin.artikel.index', compact('artikels', 'sekolahs'));
+        return view('admin.berita.index', compact('artikels', 'sekolahs'));
     }
 
     /**
@@ -51,7 +51,7 @@ class ArtikelController extends Controller
     public function create()
     {
         $sekolahs = Sekolah::all();
-        return view('admin.artikel.create', compact('sekolahs'));
+        return view('admin.berita.create', compact('sekolahs'));
     }
 
     /**
@@ -78,8 +78,7 @@ class ArtikelController extends Controller
 
             Artikel::create($validated);
 
-            return redirect()->route('artikel.index')
-                           ->with('success', 'Artikel berhasil ditambahkan.');
+            return redirect()->route('admin.berita.index')
         } catch (\Exception $e) {
             return redirect()->back()
                            ->withInput()
@@ -93,7 +92,7 @@ class ArtikelController extends Controller
     public function show(Artikel $artikel)
     {
         $artikel->load('sekolah');
-        return view('admin.artikel.show', compact('artikel'));
+        return view('admin.berita.show', compact('artikel'));
     }
 
     /**
@@ -102,7 +101,7 @@ class ArtikelController extends Controller
     public function edit(Artikel $artikel)
     {
         $sekolahs = Sekolah::all();
-        return view('admin.artikel.edit', compact('artikel', 'sekolahs'));
+        return view('admin.berita.edit', compact('artikel', 'sekolahs'));
     }
 
     /**
@@ -134,8 +133,7 @@ class ArtikelController extends Controller
 
             $artikel->update($validated);
 
-            return redirect()->route('artikel.index')
-                           ->with('success', 'Artikel berhasil diperbarui.');
+            return redirect()->route('admin.berita.index')
         } catch (\Exception $e) {
             return redirect()->back()
                            ->withInput()
@@ -156,7 +154,7 @@ class ArtikelController extends Controller
 
             $artikel->delete();
 
-            return redirect()->route('artikel.index')
+            return redirect()->route('admin.berita.index')
                            ->with('success', 'Artikel berhasil dihapus.');
         } catch (\Exception $e) {
             return redirect()->back()

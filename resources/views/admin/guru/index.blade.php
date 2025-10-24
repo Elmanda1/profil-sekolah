@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('adminlte::page')
 
 @section('title', 'Data Guru')
 @section('page-title', 'Data Guru')
@@ -52,26 +52,24 @@
                   <th width="5%">No</th>
                   <th>NIP</th>
                   <th>Nama Guru</th>
-                  <th>Jenis Kelamin</th>
                   <th>Mata Pelajaran</th>
                   <th>Alamat</th>
                   <th width="15%">Aksi</th>
                 </tr>
               </thead>
               <tbody>
-                @forelse($guru as $index => $item)
+                @forelse($gurus as $index => $item)
                   <tr>
-                    <td>{{ $guru->firstItem() + $index }}</td>
+                    <td>{{ $gurus->firstItem() + $index }}</td>
                     <td>{{ $item->nip }}</td>
                     <td>{{ $item->nama_guru }}</td>
                     <td>
-                      @if($item->jenis_kelamin == 'L')
-                        <span class="badge badge-info">Laki-laki</span>
-                      @else
-                        <span class="badge badge-pink">Perempuan</span>
-                      @endif
+                      @forelse($item->mapel as $mapel)
+                        <span class="badge badge-secondary">{{ $mapel->nama_mapel }}</span>
+                      @empty
+                        -
+                      @endforelse
                     </td>
-                    <td>{{ $item->mata_pelajaran }}</td>
                     <td>{{ Str::limit($item->alamat, 50) ?? '-' }}</td>
                     <td>
                       <div class="btn-group">
@@ -109,16 +107,16 @@
           </div>
 
           <!-- Pagination -->
-          @if($guru->hasPages())
+          @if($gurus->hasPages())
             <div class="d-flex justify-content-center">
-              {{ $guru->appends(request()->query())->links() }}
+              {{ $gurus->appends(request()->query())->links() }}
             </div>
           @endif
         </div>
         
         <div class="card-footer">
           <small class="text-muted">
-            Menampilkan {{ $guru->firstItem() ?? 0 }} - {{ $guru->lastItem() ?? 0 }} dari {{ $guru->total() }} data guru
+            Menampilkan {{ $gurus->firstItem() ?? 0 }} - {{ $gurus->lastItem() ?? 0 }} dari {{ $gurus->total() }} data guru
           </small>
         </div>
       </div>

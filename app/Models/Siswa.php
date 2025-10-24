@@ -84,6 +84,6 @@ class Siswa extends Model
 
     public function getKelasTerakhirAttribute()
     {
-        return $this->kelas()->latest('pivot_created_at')->first();
+        return $this->kelas()->orderBy('pivot_tahun_ajaran', 'desc')->orderBy('pivot_semester', 'desc')->first();
     }
 }

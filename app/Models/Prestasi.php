@@ -17,7 +17,8 @@ class Prestasi extends Model
         'id_siswa',
         'judul',
         'deskripsi',
-        'tanggal'
+        'tanggal',
+        'tahun'
     ];
 
     protected $dates = [
