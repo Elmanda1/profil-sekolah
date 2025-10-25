@@ -130,7 +130,7 @@
 function confirmDelete(id) {
     if (confirm('Apakah Anda yakin ingin menghapus data guru ini?')) {
         $.ajax({
-            url: '{{ route("api.v1.gurus.destroy", "") }}/' + id,
+            url: '/admin/api/v1/gurus/' + id,
             type: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')

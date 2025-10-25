@@ -36,6 +36,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
         $totalJurusan = \App\Models\Jurusan::count();
         $totalBerita = \App\Models\Artikel::count();
         $totalPrestasi = \App\Models\Prestasi::count();
+
+        // Data for charts
+        $siswaGender = \App\Models\Siswa::select('jenis_kelamin', DB::raw('count(*) as total'))
+            ->groupBy('jenis_kelamin')
+            ->pluck('total', 'jenis_kelamin');
+
+        $prestasiPerYear = \App\Models\Prestasi::select(DB::raw('YEAR(tanggal) as year'), DB::raw('count(*) as total'))
+            ->groupBy('year')
+            ->pluck('total', 'year');
         
         // Ambil data terbaru berdasarkan ID
         $siswaRecent = \App\Models\Siswa::with('kelas', 'sekolah')
@@ -68,7 +77,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
             'siswaRecent',
             'guruRecent',
             'beritaRecent',
-            'prestasiRecent'
+            'prestasiRecent',
+            'siswaGender',
+            'prestasiPerYear'
         ));
     })->name('dashboard');
 
@@ -122,7 +133,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     // API routes (versioned)
     Route::prefix('api')->name('api.')->group(function () {
-        Route::prefix('v1')->name('v1.')->middleware('auth:api')->group(function () {
+        Route::prefix('v1')->name('v1.')->group(function () {
             // Existing API-like routes, now versioned
             Route::get('/siswa/search', [SiswaController::class, 'search'])->name('siswa.search');
             Route::get('/guru/search', [GuruController::class, 'search'])->name('guru.search');
