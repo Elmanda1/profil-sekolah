@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('adminlte::page')
 
 @section('title', 'Detail Guru')
 @section('page-title', 'Detail Guru')

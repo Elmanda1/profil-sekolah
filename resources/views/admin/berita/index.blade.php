@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('adminlte::page')
 
 @section('title', 'Data Berita')
 
@@ -67,21 +67,18 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($berita as $key => $item)
+                                    @forelse($artikels as $key => $item)
                                         <tr>
-                                            <td>{{ $berita->firstItem() + $key }}</td>
+                                            <td>{{ $artikels->firstItem() + $key }}</td>
                                             <td>{{ $item->judul }}</td>
                                             <td>{{ $item->tanggal_format }}</td>
                                             <td>{{ $item->penulis ?? '-' }}</td>
                                             <td>
                                                 <div class="btn-group">
-                                                    <a href="{{ route('admin.berita.show', $item->id_berita) }}" class="btn btn-info btn-sm">
+                                                    <a href="{{ route('admin.berita.show', ['berita' => $item]) }}" class="btn btn-info btn-sm">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
-                                                    <a href="{{ route('admin.berita.edit', $item->id_berita) }}" class="btn btn-warning btn-sm">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    <a href="{{ route('admin.berita.edit', $item->id_berita) }}" class="btn btn-warning btn-sm">
+                                                    <a href="{{ route('admin.berita.edit', ['berita' => $item]) }}" class="btn btn-warning btn-sm">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                     <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete({{ $item->id_berita }})">
@@ -100,7 +97,7 @@
                         </div>
 
                         <div class="mt-3">
-                            {{ $berita->links() }}
+                            {{ $artikels->links() }}
                         </div>
                     </div>
                 </div>
@@ -115,7 +112,7 @@
 function confirmDelete(id) {
     if (confirm('Apakah Anda yakin ingin menghapus data berita ini?')) {
         $.ajax({
-            url: '{{ route("api.v1.artikel.destroy", "") }}/' + id,
+            url: '/admin/api/v1/artikel/' + id,
             type: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -132,57 +129,6 @@ function confirmDelete(id) {
     }
 }
 
-$('#search-form').on('submit', function(e) {
-    e.preventDefault();
-    let searchValue = $('#search-input').val();
-    fetchArtikels(searchValue);
-});
 
-function fetchArtikels(search = '') {
-    $.ajax({
-        url: '{{ route("api.v1.artikel.index") }}',
-        type: 'GET',
-        data: {
-            search: search
-        },
-        success: function(result) {
-            let tableBody = $('#artikel-table tbody');
-            tableBody.empty();
-            if (result.data.length > 0) {
-                $.each(result.data, function(index, item) {
-                    let row = `
-                        <tr>
-                            <td>${index + 1}</td>
-                            <td>${item.judul}</td>
-                            <td>${item.tanggal_format}</td>
-                            <td>${item.penulis ? item.penulis : '-'}</td>
-                            <td>
-                                <div class="btn-group">
-                                    <a href="/admin/berita/${item.id_berita}" class="btn btn-info btn-sm">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="/admin/berita/${item.id_berita}/edit" class="btn btn-warning btn-sm">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete(${item.id_berita})">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                    tableBody.append(row);
-                });
-            } else {
-                let row = `
-                    <tr>
-                        <td colspan="5" class="text-center">Tidak ada data berita</td>
-                    </tr>
-                `;
-                tableBody.append(row);
-            }
-        }
-    });
-}
 </script>
 @endpush

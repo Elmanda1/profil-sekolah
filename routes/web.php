@@ -65,10 +65,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->all();
 
         // Data for Bar Chart (Prestasi per Year)
-        $prestasiPerYear = \App\Models\Prestasi::selectRaw('tahun, count(*) as total')
-            ->groupBy('tahun')
-            ->orderBy('tahun', 'asc')
-            ->pluck('total', 'tahun')
+        $prestasiPerYear = \App\Models\Prestasi::selectRaw('YEAR(tanggal) as year, count(*) as total')
+            ->groupBy('year')
+            ->orderBy('year', 'asc')
+            ->pluck('total', 'year')
+            ->all();
+
+        // Data for Bar Chart (Guru per Mapel)
+        $guruPerMapel = \App\Models\PengampuMapel::selectRaw('nama_mapel, count(DISTINCT id_guru) as total')
+            ->join('tb_mapel', 'tb_pengampu_mapel.id_mapel', '=', 'tb_mapel.id_mapel')
+            ->groupBy('nama_mapel')
+            ->pluck('total', 'nama_mapel')
             ->all();
         
         return view('admin.dashboard', compact(
@@ -83,7 +90,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             'beritaRecent',
             'prestasiRecent',
             'siswaGender',
-            'prestasiPerYear'
+            'prestasiPerYear',
+            'guruPerMapel'
         ));
     })->name('dashboard');
 
@@ -113,7 +121,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     // Routes Berita/Artikel (Fixed naming)
     Route::resource('berita', ArtikelController::class)->parameters([
-        'berita' => 'berita:id_berita'
+        'berita' => 'berita'
     ]);
 
     // Routes Prestasi

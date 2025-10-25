@@ -73,7 +73,7 @@
                         -
                       @endif
                     </td>
-                    <td>{{ $item->tanggal_lahir->format('Y-m-d') ?? '-' }}</td>
+                    <td>{{ $item->tanggal_lahir ? $item->tanggal_lahir->format('Y-m-d') : '-' }}</td>
                     <td>{{ Str::limit($item->alamat, 50) ?? '-' }}</td>
                     <td>
                       <div class="btn-group">
@@ -130,7 +130,7 @@
 function confirmDelete(id) {
     if (confirm('Apakah Anda yakin ingin menghapus data siswa ini?')) {
         $.ajax({
-            url: '{{ route("api.v1.students.destroy", "") }}/' + id,
+            url: '/admin/api/v1/students/' + id,
             type: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')

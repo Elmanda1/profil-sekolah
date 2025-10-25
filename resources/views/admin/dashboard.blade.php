@@ -123,11 +123,15 @@
                     <canvas id="prestasiPerYearChart"></canvas>
                 </div>
             </x-adminlte-card>
+
+            <x-adminlte-card title="Jumlah Guru per Mata Pelajaran" theme="teal" theme-mode="outline" collapsible>
+                <div style="height: 300px;">
+                    <canvas id="guruPerMapelChart"></canvas>
+                </div>
+            </x-adminlte-card>
         </div>
     </div>
-@stop
-
-@section('js')
+@stop @section('js')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     function createPieChart(ctx, labels, data, title) {
@@ -194,6 +198,7 @@
     // Data from backend
     const siswaGenderData = @json($siswaGender ?? []);
     const prestasiPerYearData = @json($prestasiPerYear ?? []);
+    const guruPerMapelData = @json($guruPerMapel ?? []);
 
     // Create Siswa Gender Chart
     if (Object.keys(siswaGenderData).length > 0) {
@@ -214,6 +219,17 @@
             Object.keys(prestasiPerYearData),
             Object.values(prestasiPerYearData),
             'Jumlah Prestasi per Tahun'
+        );
+    }
+
+    // Create Guru per Mapel Chart
+    if (Object.keys(guruPerMapelData).length > 0) {
+        const guruPerMapelCtx = document.getElementById('guruPerMapelChart').getContext('2d');
+        createBarChart(
+            guruPerMapelCtx,
+            Object.keys(guruPerMapelData),
+            Object.values(guruPerMapelData),
+            'Jumlah Guru per Mata Pelajaran'
         );
     }
 </script>

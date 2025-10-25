@@ -73,10 +73,10 @@
                     <td>{{ Str::limit($item->alamat, 50) ?? '-' }}</td>
                     <td>
                       <div class="btn-group">
-                        <a href="{{ route('admin.guru.show', $item->id_guru) }}" class="btn btn-info btn-sm" title="Detail">
+                        <a href="{{ route('admin.guru.show', ['guru' => $item]) }}" class="btn btn-info btn-sm" title="Detail">
                           <i class="fas fa-eye"></i>
                         </a>
-                        <a href="{{ route('admin.guru.edit', $item->id_guru) }}" class="btn btn-warning btn-sm" title="Edit">
+                        <a href="{{ route('admin.guru.edit', ['guru' => $item]) }}" class="btn btn-warning btn-sm" title="Edit">
                           <i class="fas fa-edit"></i>
                         </a>
                         <button type="button" class="btn btn-danger btn-sm" title="Hapus" onclick="confirmDelete({{ $item->id_guru }})">
@@ -147,69 +147,6 @@ function confirmDelete(id) {
     }
 }
 
-$('#search-form').on('submit', function(e) {
-    e.preventDefault();
-    let searchValue = $('#search-input').val();
-    fetchGurus(searchValue);
-});
 
-function fetchGurus(search = '') {
-    $.ajax({
-        url: '{{ route("api.v1.gurus.index") }}',
-        type: 'GET',
-        data: {
-            search: search
-        },
-        success: function(result) {
-            let tableBody = $('#guru-table tbody');
-            tableBody.empty();
-            if (result.data.length > 0) {
-                $.each(result.data, function(index, item) {
-                    let mapel = '';
-                    if (item.mapel.length > 0) {
-                        $.each(item.mapel, function(i, m) {
-                            mapel += `<span class="badge badge-secondary">${m.nama_mapel}</span> `;
-                        });
-                    } else {
-                        mapel = '-';
-                    }
-
-                    let row = `
-                        <tr>
-                            <td>${index + 1}</td>
-                            <td>${item.nip}</td>
-                            <td>${item.nama_guru}</td>
-                            <td>${mapel}</td>
-                            <td>${item.alamat ? item.alamat.substring(0, 50) : '-'}</td>
-                            <td>
-                                <div class="btn-group">
-                                    <a href="/admin/guru/${item.id_guru}" class="btn btn-info btn-sm" title="Detail">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="/admin/guru/${item.id_guru}/edit" class="btn btn-warning btn-sm" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <button type="button" class="btn btn-danger btn-sm" title="Hapus" onclick="confirmDelete(${item.id_guru})">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                    tableBody.append(row);
-                });
-            } else {
-                let row = `
-                    <tr>
-                        <td colspan="6" class="text-center text-muted">
-                            ${search ? `Tidak ada data guru yang cocok dengan pencarian "${search}"` : 'Belum ada data guru'}
-                        </td>
-                    </tr>
-                `;
-                tableBody.append(row);
-            }
-        }
-    });
-}
 </script>
 @endpush
