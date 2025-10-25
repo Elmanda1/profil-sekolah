@@ -113,38 +113,6 @@ class KelasController extends Controller
                            ->with('error', 'Gagal menambahkan kelas: ' . $e->getMessage());
         }
     }
-            // Check if nama_kelas is unique within the same sekolah and jurusan
-            $exists = Kelas::where('id_sekolah', $request->id_sekolah)
-                          ->where('id_jurusan', $request->id_jurusan)
-                          ->where('nama_kelas', $request->nama_kelas)
-                          ->exists();
-
-            if ($exists) {
-                return redirect()->back()
-                               ->withInput()
-                               ->with('error', 'Nama kelas sudah ada di jurusan yang sama.');
-            }
-
-            // Check if wali kelas is already assigned to another class
-            if ($request->wali_kelas) {
-                $waliExists = Kelas::where('wali_kelas', $request->wali_kelas)->exists();
-                if ($waliExists) {
-                    return redirect()->back()
-                                   ->withInput()
-                                   ->with('error', 'Guru sudah menjadi wali kelas di kelas lain.');
-                }
-            }
-
-            Kelas::create($validated);
-
-            return redirect()->route('kelas.index')
-                           ->with('success', 'Kelas berhasil ditambahkan.');
-        } catch (\Exception $e) {
-            return redirect()->back()
-                           ->withInput()
-                           ->with('error', 'Gagal menambahkan kelas: ' . $e->getMessage());
-        }
-    }
 
     /**
      * Display the specified resource.

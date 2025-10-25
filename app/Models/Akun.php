@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Sanctum\HasApiTokens;
+
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class Akun extends Authenticatable
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, HasApiTokens;
 
     protected $table = 'tb_akun';
     protected $primaryKey = 'id_akun';

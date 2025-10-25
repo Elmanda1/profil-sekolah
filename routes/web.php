@@ -158,3 +158,31 @@ Route::prefix('admin')->name('admin.')->group(function () {
 Route::fallback(function () {
     return response()->view('errors.404', [], 404);
 });
+
+// Flutter API Routes - Ported from /tabungan-sekolah/api
+Route::prefix('flutterapi')->group(function () {
+    // Public routes
+    Route::post('/auth/login', [App\Http\Controllers\Flutter\AuthController::class, 'login']);
+    Route::get('/test', function () {
+        return response()->json([
+            'success' => true,
+            'message' => 'Flutter API is working',
+            'timestamp' => now()->toDateTimeString()
+        ]);
+    });
+
+    // Protected routes
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/auth/logout', [App\Http\Controllers\Flutter\AuthController::class, 'logout']);
+        Route::get('/akun', [App\Http\Controllers\Flutter\AkunController::class, 'getAkun']);
+        Route::get('/profile', [App\Http\Controllers\Flutter\AuthController::class, 'profile']);
+        Route::post('/gantipw', [App\Http\Controllers\Flutter\AkunController::class, 'changePassword']);
+        
+        Route::prefix('tabungan')->group(function () {
+            Route::get('/history', [App\Http\Controllers\Flutter\TabunganController::class, 'history']);
+            Route::get('/history/latest', [App\Http\Controllers\Flutter\TabunganController::class, 'latestHistory']);
+            Route::get('/saldo', [App\Http\Controllers\Flutter\TabunganController::class, 'getSaldo']);
+            Route::get('/income-expenses', [App\Http\Controllers\Flutter\TabunganController::class, 'getIncomeExpenses']);
+        });
+    });
+});
