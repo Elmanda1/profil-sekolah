@@ -17,7 +17,7 @@
         "vite": "^7.0.4"
     },
     "dependencies": {
-        "admin-lte": "^4.0.0-rc3",
+        "admin-lte": "^3.2.0",
         "bootstrap": "^4.6.2",
         "highlight.js": "^11.11.1",
         "jquery": "^3.7.1",

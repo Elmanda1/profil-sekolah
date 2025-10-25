@@ -1,16 +1,24 @@
-<div class="bg-gray-50 py-20">
-    <div class="container mx-auto px-4">
-        <h2 class="text-3xl font-bold text-center mb-12">Hubungi Kami</h2>
-        <div class="bg-white rounded-lg shadow-lg overflow-hidden lg:flex">
-            <div class="w-full lg:w-1/2 p-8">
-                <h3 class="text-2xl font-bold mb-6">Kirim Pesan</h3>
+<div class="relative py-20 overflow-hidden bg-gradient-to-br from-green-50 via-white to-gray-50">
+    <!-- Decorative Elements -->
+    <div class="absolute top-0 right-0 w-96 h-96 bg-green-100/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+    <div class="absolute bottom-0 left-0 w-96 h-96 bg-green-100/40 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+    
+    <div class="container mx-auto px-4 relative z-10">
+        <div class="max-w-2xl mx-auto text-center mb-12">
+            <span class="text-green-600 font-semibold text-sm uppercase tracking-wider mb-2 block">Kontak</span>
+            <h2 class="text-4xl font-bold text-gray-900 mb-4">Hubungi Kami</h2>
+            <p class="text-gray-600 text-lg">Kami siap membantu menjawab pertanyaan Anda seputar SMAN 100 Jakarta</p>
+        </div>
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl overflow-hidden lg:flex max-w-6xl mx-auto transform hover:scale-[1.02] transition-all duration-300">
+            <div class="w-full lg:w-1/2 p-8 lg:p-12">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6">Kirim Pesan</h3>
                 <form action="#" method="POST">
                     @csrf
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <input type="text" placeholder="Nama Anda" class="w-full px-4 py-3 rounded-lg bg-gray-100 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500">
-                        <input type="email" placeholder="Email Anda" class="w-full px-4 py-3 rounded-lg bg-gray-100 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <input type="text" placeholder="Nama Anda" class="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                        <input type="email" placeholder="Email Anda" class="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
                     </div>
-                    <textarea placeholder="Pesan Anda" rows="5" class="w-full px-4 py-3 rounded-lg bg-gray-100 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500 mb-6"></textarea>
+                    <textarea placeholder="Pesan Anda" rows="5" class="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 mb-6"></textarea>
                     <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full transition-all duration-300">Kirim Pesan</button>
                 </form>
             </div>
