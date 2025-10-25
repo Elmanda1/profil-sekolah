@@ -19,6 +19,7 @@
     "dependencies": {
         "admin-lte": "^4.0.0-rc3",
         "bootstrap": "^4.6.2",
+        "highlight.js": "^11.11.1",
         "jquery": "^3.7.1",
         "vue": "^3.5.22",
         "vue-router": "^4.0.13"
