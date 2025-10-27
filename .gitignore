@@ -28,3 +28,4 @@ Thumbs.db
 .editorconfig
 node_modules
 vendor
+/storage/framework/views
