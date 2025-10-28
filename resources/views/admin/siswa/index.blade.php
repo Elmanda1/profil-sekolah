@@ -44,6 +44,9 @@
                         <option value="25">25 per halaman</option>
                         <option value="50">50 per halaman</option>
                         <option value="100">100 per halaman</option>
+                        <option value="200">200 per halaman</option>
+                        <option value="500">500 per halaman</option>
+                        <option value="1000">1000 per halaman</option>
                     </select>
                 </div>
                 <div class="col-md-3 text-right">
