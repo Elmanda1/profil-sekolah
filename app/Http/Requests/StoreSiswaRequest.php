@@ -27,7 +27,7 @@ class StoreSiswaRequest extends FormRequest
             'nama_siswa' => 'required|string|max:255',
             'email' => 'required|email|unique:tb_siswa,email',
             'no_telp' => 'required|string|max:20',
-            'alamat' => 'required|string',
+            'alamat' => 'nullable|string',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
             'tanggal_lahir' => 'nullable|date',

@@ -11,6 +11,7 @@ class KelasSiswa extends Model
 
     protected $table = 'tb_kelas_siswa';
     protected $primaryKey = 'id_kelas';
+    public $timestamps = false;
 
     protected $fillable = [
         'id_kelas',
