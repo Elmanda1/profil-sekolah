@@ -28,14 +28,14 @@
                     <div class="card-header">
                         <h3 class="card-title">Form Edit Berita</h3>
                     </div>
-                    <form id="edit-artikel-form" action="{{ route('admin.berita.update', $berita->id_berita) }}" method="POST">
+                    <form id="edit-artikel-form" action="{{ route('admin.berita.update', ['berita' => $artikel]) }}" method="POST">
                         @csrf
                         @method('PUT')
                         <div class="card-body">
                             <div class="form-group">
                                 <label for="judul">Judul Berita</label>
                                 <input type="text" class="form-control @error('judul') is-invalid @enderror" 
-                                       id="judul" name="judul" value="{{ old('judul', $berita->judul) }}" 
+                                       id="judul" name="judul" value="{{ old('judul', $artikel->judul) }}" 
                                        placeholder="Masukkan judul berita">
                                 @error('judul')
                                     <span class="invalid-feedback">{{ $message }}</span>
@@ -45,7 +45,7 @@
                             <div class="form-group">
                                 <label for="isi">Isi Berita</label>
                                 <textarea class="form-control @error('isi') is-invalid @enderror" 
-                                          id="isi" name="isi" rows="10" placeholder="Masukkan isi berita">{{ old('isi', $berita->isi) }}</textarea>
+                                          id="isi" name="isi" rows="10" placeholder="Masukkan isi berita">{{ old('isi', $artikel->isi) }}</textarea>
                                 @error('isi')
                                     <span class="invalid-feedback">{{ $message }}</span>
                                 @enderror
@@ -57,7 +57,7 @@
                                         <label for="tanggal_berita">Tanggal Berita</label>
                                         <input type="date" class="form-control @error('tanggal_berita') is-invalid @enderror" 
                                                id="tanggal_berita" name="tanggal_berita" 
-                                               value="{{ old('tanggal_berita', $berita->tanggal_berita->format('Y-m-d')) }}">
+                                               value="{{ old('tanggal_berita', $artikel->tanggal_berita->format('Y-m-d')) }}">
                                         @error('tanggal_berita')
                                             <span class="invalid-feedback">{{ $message }}</span>
                                         @enderror
@@ -67,7 +67,7 @@
                                     <div class="form-group">
                                         <label for="penulis">Penulis</label>
                                         <input type="text" class="form-control @error('penulis') is-invalid @enderror" 
-                                               id="penulis" name="penulis" value="{{ old('penulis', $berita->penulis) }}" 
+                                               id="penulis" name="penulis" value="{{ old('penulis', $artikel->penulis) }}" 
                                                placeholder="Nama penulis (opsional)">
                                         @error('penulis')
                                             <span class="invalid-feedback">{{ $message }}</span>
@@ -123,6 +123,9 @@
             data: formData,
             processData: false,
             contentType: false,
+            beforeSend: function() {
+                console.log('Submitting to URL:', $(this).attr('action'));
+            },
             success: function(result) {
                 // Do something with the result
                 window.location.href = '{{ route("admin.berita.index") }}';
