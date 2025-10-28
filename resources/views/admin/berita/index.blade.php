@@ -83,8 +83,9 @@
 </section>
 @endsection
 
-@push('scripts')
+@section('js')
 <script>
+console.log('Admin Berita script is running!');
 $(document).ready(function() {
     let currentPage = 1;
     let currentSearch = '';
@@ -236,4 +237,4 @@ function confirmDelete(id) {
     }
 }
 </script>
-@endpush
+@endsection
