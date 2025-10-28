@@ -113,9 +113,7 @@
         ]);
 
         // Routes Berita/Artikel
-        Route::resource('berita', ArtikelController::class)->parameters([
-            'berita' => 'berita'
-        ]);
+        Route::resource('berita', ArtikelController::class);
 
         // Routes Prestasi
         Route::resource('prestasi', PrestasiController::class)->parameters([
