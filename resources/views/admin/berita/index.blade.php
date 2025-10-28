@@ -53,6 +53,14 @@
                                     </div>
                                 </form>
                             </div>
+                            <div class="col-md-3">
+                                <select id="per-page-select" class="form-control">
+                                    <option value="10" selected>10 per halaman</option>
+                                    <option value="25">25 per halaman</option>
+                                    <option value="50">50 per halaman</option>
+                                    <option value="100">100 per halaman</option>
+                                </select>
+                            </div>
                         </div>
 
                         <div class="table-responsive">
@@ -89,11 +97,12 @@ console.log('Admin Berita script is running!');
 $(document).ready(function() {
     let currentPage = 1;
     let currentSearch = '';
+    let currentLimit = 10; // Default 10 items per page
 
     function fetchArtikel(page = 1, search = '') {
         currentPage = page;
         currentSearch = search;
-        const url = `/api/v1/berita?page=${page}&search=${search}`;
+        const url = `/api/v1/berita?page=${page}&search=${search}&limit=${currentLimit}`;
 
         // Show a loading state
         const tableBody = $('#artikel-table-body');
@@ -226,6 +235,13 @@ $(document).ready(function() {
         if (page) {
             fetchArtikel(page, currentSearch);
         }
+    });
+
+    // Per page limit selector
+    $('#per-page-select').on('change', function() {
+        currentLimit = parseInt($(this).val());
+        currentPage = 1; // Reset to first page
+        fetchArtikel(currentPage, currentSearch);
     });
 });
 

@@ -257,8 +257,9 @@ class ArtikelController extends Controller
             $query->where('tanggal', '<=', $request->sampai_tanggal);
         }
 
+        $limit = $request->input('limit', 10); // Get limit from request, default to 10
         $artikels = $query->select('id_artikel', 'judul', 'isi', 'tanggal', 'id_sekolah')
-                         ->orderBy('tanggal', 'desc')->paginate(10);
+                         ->orderBy('tanggal', 'desc')->paginate($limit);
 
         return response()->json($artikels);
     }

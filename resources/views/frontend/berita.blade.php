@@ -37,13 +37,35 @@
                     @endif
 
                     {{-- Page Numbers --}}
-                    @for ($i = 1; $i <= $artikels->lastPage(); $i++)
-                        @if ($i == $artikels->currentPage())
+                    @php
+                        $currentPage = $artikels->currentPage();
+                        $lastPage = $artikels->lastPage();
+                        $pageRange = 2; // Number of pages to show around the current page
+                        $startPage = max(1, $currentPage - $pageRange);
+                        $endPage = min($lastPage, $currentPage + $pageRange);
+                    @endphp
+
+                    @if ($startPage > 1)
+                        <a href="{{ $artikels->url(1) }}" class="px-4 py-2 text-gray-700 bg-white rounded-lg hover:bg-green-100 transition-colors duration-200">1</a>
+                        @if ($startPage > 2)
+                            <span class="px-4 py-2 text-gray-400 bg-gray-100 rounded-lg cursor-not-allowed">...</span>
+                        @endif
+                    @endif
+
+                    @for ($i = $startPage; $i <= $endPage; $i++)
+                        @if ($i == $currentPage)
                             <span class="px-4 py-2 bg-green-600 text-white rounded-lg">{{ $i }}</span>
                         @else
                             <a href="{{ $artikels->url($i) }}" class="px-4 py-2 text-gray-700 bg-white rounded-lg hover:bg-green-100 transition-colors duration-200">{{ $i }}</a>
                         @endif
                     @endfor
+
+                    @if ($endPage < $lastPage)
+                        @if ($endPage < $lastPage - 1)
+                            <span class="px-4 py-2 text-gray-400 bg-gray-100 rounded-lg cursor-not-allowed">...</span>
+                        @endif
+                        <a href="{{ $artikels->url($lastPage) }}" class="px-4 py-2 text-gray-700 bg-white rounded-lg hover:bg-green-100 transition-colors duration-200">{{ $lastPage }}</a>
+                    @endif
 
                     {{-- Next Page Link --}}
                     @if ($artikels->hasMorePages())
