@@ -67,10 +67,10 @@
                 ->pluck('total', 'year')
                 ->all();
 
-            $guruPerMapel = \App\Models\PengampuMapel::selectRaw('nama_mapel, count(DISTINCT id_guru) as total')
-                ->join('tb_mapel', 'tb_pengampu_mapel.id_mapel', '=', 'tb_mapel.id_mapel')
-                ->groupBy('nama_mapel')
-                ->pluck('total', 'nama_mapel')
+            $guruPerSekolah = \App\Models\Guru::selectRaw('tb_sekolah.nama_sekolah, count(tb_guru.id_guru) as total')
+                ->join('tb_sekolah', 'tb_guru.id_sekolah', '=', 'tb_sekolah.id_sekolah')
+                ->groupBy('tb_sekolah.nama_sekolah')
+                ->pluck('total', 'nama_sekolah')
                 ->all();
             
             return view('admin.dashboard', compact(
@@ -86,7 +86,7 @@
                 'prestasiRecent',
                 'siswaGender',
                 'prestasiPerYear',
-                'guruPerMapel'
+                'guruPerSekolah'
             ));
         })->name('dashboard');
 
