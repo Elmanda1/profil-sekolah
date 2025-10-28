@@ -7,7 +7,9 @@ use App\Models\Sekolah;
 use App\Models\Siswa;
 use App\Http\Requests\StorePrestasiRequest;
 use App\Http\Requests\UpdatePrestasiRequest;
+use App\Http\Resources\PrestasiResource;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class PrestasiController extends Controller
@@ -17,49 +19,61 @@ class PrestasiController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Prestasi::with(['sekolah:id_sekolah,nama_sekolah']);
+        $startTime = microtime(true);
 
-        // Filter by sekolah
-        if ($request->has('sekolah_id') && $request->sekolah_id) {
-            $query->where('id_sekolah', $request->sekolah_id);
+        // Parameter pagination dan filter
+        $limit = $request->input('limit', 10);
+        $page = $request->input('page', 1);
+        $search = $request->input('search', '');
+        $sekolahId = $request->input('sekolah_id', '');
+
+        // Query dasar
+        $query = Prestasi::query()
+            ->with(['sekolah:id_sekolah,nama_sekolah'])
+            ->select(['id_prestasi', 'judul', 'tanggal', 'id_sekolah']);
+
+        if ($sekolahId) {
+            $query->where('id_sekolah', $sekolahId);
         }
 
-        // Filter by tingkat
-        if ($request->has('tingkat') && $request->tingkat) {
-            $query->where('tingkat', $request->tingkat);
-        }
-
-        // Filter by peringkat
-        if ($request->has('peringkat') && $request->peringkat) {
-            $query->where('peringkat', $request->peringkat);
-        }
-
-        // Filter by date range
-        if ($request->has('dari_tanggal') && $request->dari_tanggal) {
-            $query->where('tanggal', '>=', $request->dari_tanggal);
-        }
-        if ($request->has('sampai_tanggal') && $request->sampai_tanggal) {
-            $query->where('tanggal', '<=', $request->sampai_tanggal);
-        }
-
-        // Search functionality
-        if ($request->has('search') && $request->search) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('nama_lomba', 'like', "%{$search}%")
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('judul', 'like', "%{$search}%")
                   ->orWhere('deskripsi', 'like', "%{$search}%");
             });
         }
 
-        $prestasis = $query->select('id_prestasi', 'judul', 'tanggal', 'id_sekolah')
-                         ->orderBy('tanggal', 'desc')->paginate(10);
+        // ✅ Jika request dari DataTables AJAX (admin table)
+        if ($request->ajax() && !$request->expectsJson()) {
+            return datatables()->of($query)->make(true);
+        }
+
+        // ✅ Jika request dari API (expects JSON)
+        if ($request->expectsJson() || $request->ajax()) {
+            $prestasis = $query->paginate($limit);
+            
+            return response()->json([
+                'data' => $prestasis->items(),
+                'meta' => [
+                    'current_page' => $prestasis->currentPage(),
+                    'last_page' => $prestasis->lastPage(),
+                    'total' => $prestasis->total(),
+                    'from' => $prestasis->firstItem(),
+                    'to' => $prestasis->lastItem(),
+                    'per_page' => $prestasis->perPage(),
+                    'links' => $prestasis->linkCollection()->toArray(),
+                ]
+            ]);
+        }
+
+        // ✅ Jika request dari Blade biasa (admin/prestasi)
+        $prestasis = $query->paginate($limit);
         $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
 
-        // Data for filters
-        $tingkats = ['Sekolah', 'Kabupaten/Kota', 'Provinsi', 'Nasional', 'Internasional'];
-        $peringkats = ['Juara 1', 'Juara 2', 'Juara 3', 'Harapan 1', 'Harapan 2', 'Harapan 3', 'Finalis', 'Peserta'];
+        $executionTime = (microtime(true) - $startTime) * 1000;
+        Log::info("PrestasiController@index executed in {$executionTime}ms");
 
-        return view('admin.prestasi.index', compact('prestasis', 'sekolahs', 'tingkats', 'peringkats'));
+        return view('admin.prestasi.index', compact('prestasis', 'sekolahs', 'search'));
     }
 
     /**

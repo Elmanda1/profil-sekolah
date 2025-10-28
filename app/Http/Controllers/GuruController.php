@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use App\Http\Resources\GuruResource;
+use Illuminate\Support\Facades\Log;
 
 class GuruController extends Controller
 {
@@ -23,38 +24,60 @@ class GuruController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Guru::with(['sekolah:id_sekolah,nama_sekolah', 'akun:id_akun,username,id_guru', 'mapel:id_mapel,nama_mapel']);
+        $startTime = microtime(true);
 
-        // Filter by sekolah
-        if ($request->filled('sekolah_id')) {
-            $query->bySekolah($request->sekolah_id);
+        // Parameter pagination dan filter
+        $limit = $request->input('limit', 10);
+        $page = $request->input('page', 1);
+        $search = $request->input('search', '');
+        $sekolahId = $request->input('sekolah_id', '');
+
+        // Query dasar
+        $query = Guru::query()
+            ->with(['sekolah:id_sekolah,nama_sekolah'])
+            ->select(['id_guru', 'nama_guru', 'nip', 'email', 'no_telp', 'id_sekolah']);
+
+        if ($sekolahId) {
+            $query->where('id_sekolah', $sekolahId);
         }
 
-        // Search functionality
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
+        if ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama_guru', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
                   ->orWhere('nip', 'like', "%{$search}%")
-                  ->orWhere('no_telp', 'like', "%{$search}%");
+                  ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
-        // Sorting
-        $sortBy = $request->get('sort_by', 'nama_guru');
-        $sortDirection = $request->get('sort_direction', 'asc');
-        
-        $allowedSorts = ['nama_guru', 'email', 'created_at', 'nip'];
-        if (in_array($sortBy, $allowedSorts)) {
-            $query->orderBy($sortBy, $sortDirection);
+        // ✅ Jika request dari DataTables AJAX (admin table)
+        if ($request->ajax() && !$request->expectsJson()) {
+            return datatables()->of($query)->make(true);
         }
 
-        $gurus = $query->select('id_guru', 'nama_guru', 'nip', 'email', 'no_telp', 'id_sekolah')
-                       ->paginate(15)
-                       ->withQueryString();
+        // ✅ Jika request dari API (expects JSON)
+        if ($request->expectsJson() || $request->ajax()) {
+            $gurus = $query->paginate($limit);
+            
+            return response()->json([
+                'data' => $gurus->items(),
+                'meta' => [
+                    'current_page' => $gurus->currentPage(),
+                    'last_page' => $gurus->lastPage(),
+                    'total' => $gurus->total(),
+                    'from' => $gurus->firstItem(),
+                    'to' => $gurus->lastItem(),
+                    'per_page' => $gurus->perPage(),
+                    'links' => $gurus->linkCollection()->toArray(),
+                ]
+            ]);
+        }
+
+        // ✅ Jika request dari Blade biasa (admin/guru)
+        $gurus = $query->paginate($limit);
         $sekolahs = Sekolah::select('id_sekolah', 'nama_sekolah')->get();
-        $search = $request->search;
+
+        $executionTime = (microtime(true) - $startTime) * 1000;
+        Log::info("GuruController@index executed in {$executionTime}ms");
 
         return view('admin.guru.index', compact('gurus', 'sekolahs', 'search'));
     }
