@@ -18,7 +18,7 @@
           <h3 class="card-title">Form Tambah Siswa</h3>
         </div>
         
-        <form id="create-siswa-form" action="{{ route('admin.siswa.store') }}" method="POST">
+        <form id="create-siswa-form" action="{{ route('admin.siswa.store') }}" method="POST" enctype="multipart/form-data">
           @csrf
           <div class="card-body">
             
@@ -38,6 +38,26 @@
                      id="nama_siswa" name="nama_siswa" value="{{ old('nama_siswa') }}" 
                      placeholder="Masukkan nama lengkap siswa">
               @error('nama_siswa')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email <span class="text-danger">*</span></label>
+              <input type="email" class="form-control @error('email') is-invalid @enderror" 
+                     id="email" name="email" value="{{ old('email') }}" 
+                     placeholder="Masukkan email siswa">
+              @error('email')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="form-group">
+              <label for="no_telp">No. Telepon <span class="text-danger">*</span></label>
+              <input type="text" class="form-control @error('no_telp') is-invalid @enderror" 
+                     id="no_telp" name="no_telp" value="{{ old('no_telp') }}" 
+                     placeholder="Masukkan nomor telepon siswa">
+              @error('no_telp')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
             </div>
@@ -155,50 +175,106 @@
                   <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
               </div>
+
+              <div class="form-group">
+                <label for="password_confirmation">Konfirmasi Password <span class="text-danger">*</span></label>
+                <input type="password" class="form-control" 
+                       id="password_confirmation" name="password_confirmation" placeholder="Konfirmasi password">
+              </div>
             </div>
 
-            @push('scripts')
-            <script>
-              document.getElementById('create_account').addEventListener('change', function() {
-                var accountFields = document.getElementById('account_fields');
-                if (this.checked) {
-                  accountFields.style.display = 'block';
-                } else {
-                  accountFields.style.display = 'none';
+            @section('js')
+<script>
+$(function() {
+    console.log('Create siswa script loaded!');
+
+    document.getElementById('create_account').addEventListener('change', function() {
+        var accountFields = document.getElementById('account_fields');
+        if (this.checked) {
+            accountFields.style.display = 'block';
+        } else {
+            accountFields.style.display = 'none';
+        }
+    });
+
+        $('#create-siswa-form').on('submit', function(e) {
+
+            e.preventDefault();
+
+    
+
+            const form = $(this);
+
+            const submitButton = form.find('button[type="submit"]');
+
+            submitButton.prop('disabled', true);
+
+    
+
+            let formData = new FormData(this);
+
+            console.log('Form data:', Object.fromEntries(formData.entries()));
+
+    
+
+            $.ajax({
+
+                url: form.attr('action'),
+
+                type: 'POST',
+
+                data: formData,
+
+                processData: false,
+
+                contentType: false,
+
+                success: function(result) {
+
+                    console.log('Success:', result);
+
+                    window.location.replace('{{ route("admin.siswa.index") }}');
+
+                },
+
+                error: function(err) {
+
+                    console.error('Error:', err);
+
+                    let errors = err.responseJSON.errors;
+
+                    console.log('Validation errors:', JSON.stringify(errors, null, 2));
+
+                    // Clear previous errors
+
+                    $('.is-invalid').removeClass('is-invalid');
+
+                    $('.invalid-feedback').remove();
+
+    
+
+                    $.each(errors, function(key, value) {
+
+                        $('#' + key).addClass('is-invalid');
+
+                        $('#' + key).after('<div class="invalid-feedback">' + value[0] + '</div>');
+
+                    });
+
+                },
+
+                complete: function() {
+
+                    submitButton.prop('disabled', false);
+
                 }
-              });
 
-              $('#create-siswa-form').on('submit', function(e) {
-                  e.preventDefault();
+            });
 
-                  let formData = new FormData(this);
-
-                  $.ajax({
-                      url: $(this).attr('action'),
-                      type: 'POST',
-                      data: formData,
-                      processData: false,
-                      contentType: false,
-                      success: function(result) {
-                          // Do something with the result
-                          window.location.href = '{{ route("admin.siswa.index") }}';
-                      },
-                      error: function(err) {
-                          // Do something with the error
-                          let errors = err.responseJSON.errors;
-                          // Clear previous errors
-                          $('.is-invalid').removeClass('is-invalid');
-                          $('.invalid-feedback').remove();
-
-                          $.each(errors, function(key, value) {
-                              $('#' + key).addClass('is-invalid');
-                              $('#' + key).after('<div class="invalid-feedback">' + value[0] + '</div>');
-                          });
-                      }
-                  });
-              });
-            </script>
-            @endpush
+        });
+});
+</script>
+@endsection
 
           </div>
 
