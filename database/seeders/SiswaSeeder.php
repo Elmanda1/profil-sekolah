@@ -36,8 +36,8 @@ class SiswaSeeder extends Seeder
         foreach ($sekolahList as $sekolah) {
             $this->command->info("📚 Membuat siswa untuk: {$sekolah->nama_sekolah}");
             
-            // Buat 30 siswa per sekolah
-            for ($i = 0; $i < 30; $i++) {
+            // Buat x siswa per sekolah
+            for ($i = 0; $i < 5000; $i++) {
                 // Random gender
                 $gender = $faker->randomElement(['Laki-laki', 'Perempuan']);
                 
