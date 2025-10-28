@@ -227,4 +227,39 @@ class ArtikelController extends Controller
 
         return view('frontend.berita', compact('artikels', 'sekolahs'));
     }
+
+    /**
+     * Provide article data for API requests.
+     */
+    public function getBeritaJson(Request $request)
+    {
+        $query = Artikel::with('sekolah:id_sekolah,nama_sekolah');
+
+        // Filter by sekolah if provided
+        if ($request->has('sekolah_id') && $request->sekolah_id) {
+            $query->where('id_sekolah', $request->sekolah_id);
+        }
+
+        // Search functionality
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('judul', 'like', "%{$search}%")
+                  ->orWhere('isi', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by date range
+        if ($request->has('dari_tanggal') && $request->dari_tanggal) {
+            $query->where('tanggal', '>=', $request->dari_tanggal);
+        }
+        if ($request->has('sampai_tanggal') && $request->sampai_tanggal) {
+            $query->where('tanggal', '<=', $request->sampai_tanggal);
+        }
+
+        $artikels = $query->select('id_artikel', 'judul', 'isi', 'tanggal', 'id_sekolah')
+                         ->orderBy('tanggal', 'desc')->paginate(10);
+
+        return response()->json($artikels);
+    }
 }

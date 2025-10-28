@@ -62,42 +62,18 @@
                                         <th>No</th>
                                         <th>Judul</th>
                                         <th>Tanggal Berita</th>
-                                        <th>Penulis</th>
+                                        <th>Sekolah</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    @forelse($artikels as $key => $item)
-                                        <tr>
-                                            <td>{{ $artikels->firstItem() + $key }}</td>
-                                            <td>{{ $item->judul }}</td>
-                                            <td>{{ $item->tanggal_format }}</td>
-                                            <td>{{ $item->penulis ?? '-' }}</td>
-                                            <td>
-                                                <div class="btn-group">
-                                                    <a href="{{ route('admin.berita.show', ['berita' => $item]) }}" class="btn btn-info btn-sm">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                    <a href="{{ route('admin.berita.edit', ['berita' => $item]) }}" class="btn btn-warning btn-sm">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete({{ $item->id_berita }})">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="5" class="text-center">Tidak ada data berita</td>
-                                        </tr>
-                                    @endforelse
+                                <tbody id="artikel-table-body">
+                                    <!-- Data will be loaded here by AJAX -->
                                 </tbody>
                             </table>
                         </div>
 
-                        <div class="mt-3">
-                            {{ $artikels->links() }}
+                        <div class="mt-3 d-flex justify-content-center" id="pagination-links">
+                            <!-- Pagination links will be loaded here by AJAX -->
                         </div>
                     </div>
                 </div>
@@ -109,26 +85,155 @@
 
 @push('scripts')
 <script>
-function confirmDelete(id) {
-    if (confirm('Apakah Anda yakin ingin menghapus data berita ini?')) {
+$(document).ready(function() {
+    let currentPage = 1;
+    let currentSearch = '';
+
+    function fetchArtikel(page = 1, search = '') {
+        currentPage = page;
+        currentSearch = search;
+        const url = `/api/v1/berita?page=${page}&search=${search}`;
+
+        // Show a loading state
+        const tableBody = $('#artikel-table-body');
+        tableBody.html('<tr><td colspan="5" class="text-center"><i class="fas fa-spinner fa-spin"></i> Memuat data...</td></tr>');
+
         $.ajax({
-            url: '/admin/api/v1/artikel/' + id,
-            type: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(result) {
-                // Do something with the result
-                location.reload();
+            url: url,
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                updateTable(response);
+                updatePagination(response);
             },
             error: function(err) {
-                // Do something with the error
-                alert('Gagal menghapus data berita.');
+                tableBody.html('<tr><td colspan="5" class="text-center">Gagal memuat data. Silakan coba lagi.</td></tr>');
+            }
+        });
+    }
+
+    function updateTable(response) {
+        const tableBody = $('#artikel-table-body');
+        tableBody.empty();
+
+        if (response.data.length === 0) {
+            tableBody.html('<tr><td colspan="5" class="text-center">Tidak ada data berita yang cocok dengan pencarian.</td></tr>');
+            return;
+        }
+
+        const firstItem = response.from;
+        $.each(response.data, function(index, item) {
+            const formattedDate = item.tanggal ? new Date(item.tanggal).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : '-';
+            const sekolahName = item.sekolah ? item.sekolah.nama_sekolah : 'N/A';
+            
+            // Construct action URLs
+            const showUrl = `{{ route('admin.berita.index') }}/${item.id_artikel}`;
+            const editUrl = `${showUrl}/edit`;
+
+            const row = `
+                <tr>
+                    <td>${firstItem + index}</td>
+                    <td>${item.judul}</td>
+                    <td>${formattedDate}</td>
+                    <td>${sekolahName}</td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="${showUrl}" class="btn btn-info btn-sm">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="${editUrl}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete(${item.id_artikel})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            tableBody.append(row);
+        });
+    }
+
+    function updatePagination(response) {
+        const paginationLinks = $('#pagination-links');
+        paginationLinks.empty();
+
+        if (response.last_page > 1) {
+            let paginationHtml = '<ul class="pagination">';
+
+            // Previous button
+            paginationHtml += `
+                <li class="page-item ${response.current_page === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" data-page="${response.current_page - 1}">&laquo;</a>
+                </li>
+            `;
+
+            // Page numbers
+            for (let i = 1; i <= response.last_page; i++) {
+                paginationHtml += `
+                    <li class="page-item ${i === response.current_page ? 'active' : ''}">
+                        <a class="page-link" href="#" data-page="${i}">${i}</a>
+                    </li>
+                `;
+            }
+
+            // Next button
+            paginationHtml += `
+                <li class="page-item ${response.current_page === response.last_page ? 'disabled' : ''}">
+                    <a class="page-link" href="#" data-page="${response.current_page + 1}">&raquo;</a>
+                </li>
+            `;
+
+            paginationHtml += '</ul>';
+            paginationLinks.html(paginationHtml);
+        }
+    }
+
+    // Initial fetch
+    fetchArtikel();
+
+    // Search form submission
+    $('#search-form').on('submit', function(e) {
+        e.preventDefault();
+        const searchTerm = $('#search-input').val();
+        fetchArtikel(1, searchTerm);
+    });
+
+    // Pagination click handler
+    $(document).on('click', '#pagination-links a.page-link', function(e) {
+        e.preventDefault();
+        const page = $(this).data('page');
+        if (page) {
+            fetchArtikel(page, currentSearch);
+        }
+    });
+});
+
+function confirmDelete(id) {
+    if (confirm('Apakah Anda yakin ingin menghapus data berita ini?')) {
+        const deleteUrl = `{{ route('admin.berita.index') }}/${id}`;
+        
+        $.ajax({
+            url: deleteUrl,
+            type: 'POST',
+            data: {
+                _method: 'DELETE',
+                _token: '{{ csrf_token() }}'
+            },
+            success: function(result) {
+                alert('Data berhasil dihapus.');
+                // Reload the current page in the table without full page refresh
+                const currentPage = $('#pagination-links .page-item.active .page-link').data('page') || 1;
+                const currentSearch = $('#search-input').val();
+                fetchArtikel(currentPage, currentSearch);
+            },
+            error: function(err) {
+                console.error(err);
+                alert('Gagal menghapus data berita. Lihat konsol untuk detail.');
             }
         });
     }
 }
-
-
 </script>
 @endpush

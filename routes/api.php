@@ -5,6 +5,7 @@ use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\GuruController;
 use App\Http\Controllers\KelasController;
 use App\Http\Controllers\JurusanController;
+use App\Http\Controllers\ArtikelController;
 
 // Pastikan semua API route di sini TIDAK pakai prefix 'admin' lagi
 Route::prefix('v1')->group(function () {
@@ -24,4 +25,7 @@ Route::prefix('v1')->group(function () {
 
     // Jurusan API
     Route::get('/jurusan', [JurusanController::class, 'index'])->name('api.v1.jurusan.index');
+
+    // Artikel API
+    Route::get('/berita', [ArtikelController::class, 'getBeritaJson'])->name('api.v1.berita.index');
 });
