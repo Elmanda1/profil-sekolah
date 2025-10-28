@@ -59,13 +59,20 @@ class SiswaController extends Controller
         }
 
         // ✅ Jika request dari API (expects JSON)
-        if ($request->expectsJson()) {
+        if ($request->expectsJson() || $request->ajax()) {
             $siswas = $query->paginate($limit);
+            
             return response()->json([
                 'data' => $siswas->items(),
-                'current_page' => $siswas->currentPage(),
-                'last_page' => $siswas->lastPage(),
-                'total' => $siswas->total(),
+                'meta' => [
+                    'current_page' => $siswas->currentPage(),
+                    'last_page' => $siswas->lastPage(),
+                    'total' => $siswas->total(),
+                    'from' => $siswas->firstItem(),
+                    'to' => $siswas->lastItem(),
+                    'per_page' => $siswas->perPage(),
+                    'links' => $siswas->linkCollection()->toArray(),
+                ]
             ]);
         }
 

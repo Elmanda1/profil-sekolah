@@ -23,20 +23,34 @@
         </div>
         
         <div class="card-body">
-          <!-- Search Form -->
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <div class="input-group">
-                <input type="text" id="search-input" class="form-control" placeholder="Cari nama atau NISN siswa...">
-                <div class="input-group-append">
-                  <button class="btn btn-outline-secondary" type="button" id="search-button">
-                    <i class="fas fa-search"></i>
-                  </button>
-                  <button class="btn btn-outline-danger" type="button" id="clear-search-button" style="display:none;">
-                    <i class="fas fa-times"></i>
-                  </button>
+          <!-- Search Form & Controls -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" id="search-input" class="form-control" placeholder="Cari nama atau NISN siswa..." autocomplete="off">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="button" id="search-button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" type="button" id="clear-search-button" style="display:none;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-              </div>
+                <div class="col-md-3">
+                    <select id="per-page-select" class="form-control">
+                        <option value="10" selected>10 per halaman</option>
+                        <option value="25">25 per halaman</option>
+                        <option value="50">50 per halaman</option>
+                        <option value="100">100 per halaman</option>
+                    </select>
+                </div>
+                <div class="col-md-3 text-right">
+                    <span class="badge badge-info" id="loading-indicator" style="display:none;">
+                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                    </span>
+                </div>
             </div>
             <div class="col-md-6 text-right">
               <span class="badge badge-info" id="loading-indicator" style="display:none;">
@@ -82,20 +96,26 @@
 </div>
 @endsection
 
-@push('scripts')
+@section('js')
 <script>
+console.log('Script initialized! jQuery:', typeof jQuery);
+
 // Global variables
 let currentPage = 1;
 let currentSearch = '';
+let currentLimit = 10; // Default 10 items per page
 let isLoading = false;
 let searchTimer = null;
 
 // Initialize on page load
 $(document).ready(function() {
+    console.log('DOM Ready! Starting fetchStudents...');
+    
+    // Initial load
     fetchStudents();
     
-    // Search with debounce (500ms delay)
-    $('#search-input').on('keyup', function() {
+    // Live search (real-time, 300ms debounce)
+    $('#search-input').on('input', function() {
         const searchValue = $(this).val().trim();
         
         // Show/hide clear button
@@ -108,12 +128,12 @@ $(document).ready(function() {
         // Clear previous timer
         clearTimeout(searchTimer);
         
-        // Set new timer
+        // Set new timer for live search
         searchTimer = setTimeout(() => {
             currentSearch = searchValue;
-            currentPage = 1; // Reset to first page
+            currentPage = 1; // Reset to first page on new search
             fetchStudents();
-        }, 500); // 500ms debounce
+        }, 300); // 300ms debounce for smooth typing
     });
     
     // Clear search button
@@ -125,60 +145,79 @@ $(document).ready(function() {
         fetchStudents();
     });
     
-    // Search button (optional, since we have debounce)
+    // Search button (optional backup)
     $('#search-button').on('click', function() {
         currentSearch = $('#search-input').val().trim();
         currentPage = 1;
+        fetchStudents();
+    });
+    
+    // Per page limit selector
+    $('#per-page-select').on('change', function() {
+        currentLimit = parseInt($(this).val());
+        currentPage = 1; // Reset to first page
+        console.log('Per page changed to:', currentLimit);
         fetchStudents();
     });
 });
 
 /**
  * Fetch students data via AJAX
- * OPTIMIZED: Fast, cached, paginated
+ * ULTRA FAST - No page reload
  */
 function fetchStudents(page = null) {
-    // Prevent multiple simultaneous requests
     if (isLoading) return;
     
     isLoading = true;
-    $('#loading-indicator').show();
     
-    // Use provided page or current page
+    // Show loading indicator with fade effect
+    $('#loading-indicator').fadeIn(200);
+    
     const requestPage = page || currentPage;
     
+    console.log('Fetching students... page:', requestPage, 'search:', currentSearch, 'limit:', currentLimit);
+    
     $.ajax({
-        url: '/api/v1/students',
+        url: '{{ route("admin.siswa.index") }}',
         type: 'GET',
         data: {
             search: currentSearch,
             page: requestPage,
-            limit: 100 // 100 items per page for fast loading
+            limit: currentLimit
         },
         headers: {
             'Accept': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
         },
         success: function(response) {
-            renderTable(response);
+            console.log('Data received:', response);
+            
+            // Smooth transition
+            $('#siswa-table tbody').fadeOut(100, function() {
+                renderTable(response);
+                $(this).fadeIn(200);
+            });
+            
             renderPagination(response);
             updateSummary(response);
             currentPage = requestPage;
         },
         error: function(xhr, status, error) {
-            console.error('Error fetching students:', error);
+            console.error('Error fetching students:', xhr.status, xhr.responseText);
             showError('Gagal memuat data siswa. Silakan refresh halaman.');
+            $('#siswa-table tbody').css('opacity', '1');
         },
         complete: function() {
             isLoading = false;
-            $('#loading-indicator').hide();
+            $('#loading-indicator').fadeOut(50);
+            $('#siswa-table tbody').css('opacity', '1');
         }
     });
 }
 
 /**
  * Render table rows
- * OPTIMIZED: DOM manipulation in batch
+ * OPTIMIZED: Batch DOM manipulation
  */
 function renderTable(response) {
     const tbody = $('#siswa-table tbody');
@@ -231,7 +270,7 @@ function renderTable(response) {
         
         tbody.html(`
             <tr>
-                <td colspan="7" class="text-center text-muted">${emptyMessage}</td>
+                <td colspan="7" class="text-center text-muted py-4">${emptyMessage}</td>
             </tr>
         `);
     }
@@ -239,7 +278,7 @@ function renderTable(response) {
 
 /**
  * Render pagination
- * OPTIMIZED: Event delegation
+ * SMOOTH: No reload, instant page change
  */
 function renderPagination(response) {
     const container = $('#pagination-container');
@@ -248,31 +287,63 @@ function renderPagination(response) {
     if (response.meta.last_page > 1) {
         let paginationHtml = '<ul class="pagination pagination-sm m-0">';
         
-        response.meta.links.forEach((link) => {
-            let label = link.label;
-            let pageNum = null;
-            
-            // Clean up labels
-            if (label === '&laquo; Previous') label = '&laquo;';
-            if (label === 'Next &raquo;') label = '&raquo;';
-            
-            // Extract page number from URL
-            if (link.url) {
-                const urlParams = new URLSearchParams(new URL(link.url).search);
-                pageNum = urlParams.get('page');
-            }
-            
-            const activeClass = link.active ? 'active' : '';
-            const disabledClass = !link.url ? 'disabled' : '';
-            
+        // Previous button
+        const prevDisabled = response.meta.current_page === 1 ? 'disabled' : '';
+        paginationHtml += `
+            <li class="page-item ${prevDisabled}">
+                <a class="page-link" href="#" onclick="event.preventDefault(); ${response.meta.current_page > 1 ? `fetchStudents(${response.meta.current_page - 1})` : 'return false'};">
+                    &laquo;
+                </a>
+            </li>
+        `;
+        
+        // Page numbers (smart pagination)
+        const currentPage = response.meta.current_page;
+        const lastPage = response.meta.last_page;
+        
+        // Show first page
+        if (currentPage > 3) {
             paginationHtml += `
-                <li class="page-item ${activeClass} ${disabledClass}">
-                    <a class="page-link" href="#" data-page="${pageNum}" onclick="event.preventDefault(); if(${!!link.url}) fetchStudents(${pageNum});">
-                        ${label}
-                    </a>
+                <li class="page-item">
+                    <a class="page-link" href="#" onclick="event.preventDefault(); fetchStudents(1);">1</a>
                 </li>
             `;
-        });
+            if (currentPage > 4) {
+                paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+        }
+        
+        // Show pages around current page
+        for (let i = Math.max(1, currentPage - 2); i <= Math.min(lastPage, currentPage + 2); i++) {
+            const activeClass = i === currentPage ? 'active' : '';
+            paginationHtml += `
+                <li class="page-item ${activeClass}">
+                    <a class="page-link" href="#" onclick="event.preventDefault(); fetchStudents(${i});">${i}</a>
+                </li>
+            `;
+        }
+        
+        // Show last page
+        if (currentPage < lastPage - 2) {
+            if (currentPage < lastPage - 3) {
+                paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+            paginationHtml += `
+                <li class="page-item">
+                    <a class="page-link" href="#" onclick="event.preventDefault(); fetchStudents(${lastPage});">${lastPage}</a>
+                </li>
+            `;
+        }
+        
+        // Next button
+        const nextDisabled = response.meta.current_page === lastPage ? 'disabled' : '';
+        paginationHtml += `
+            <li class="page-item ${nextDisabled}">
+                <a class="page-link" href="#" onclick="event.preventDefault(); ${response.meta.current_page < lastPage ? `fetchStudents(${response.meta.current_page + 1})` : 'return false'};">
+                    &raquo;
+                </a>
+            </li>
+        `;
         
         paginationHtml += '</ul>';
         container.html(paginationHtml);
@@ -286,7 +357,9 @@ function updateSummary(response) {
     const summary = $('#data-summary');
     
     if (response.meta.total > 0) {
-        summary.text(`Menampilkan ${response.meta.from} - ${response.meta.to} dari ${response.meta.total} data siswa`);
+        summary.html(`
+            Menampilkan <strong>${response.meta.from}</strong> - <strong>${response.meta.to}</strong> dari <strong>${response.meta.total}</strong> data siswa
+        `);
     } else {
         summary.text('Menampilkan 0 - 0 dari 0 data siswa');
     }
@@ -298,28 +371,55 @@ function updateSummary(response) {
  */
 function confirmDelete(id) {
     if (confirm('Apakah Anda yakin ingin menghapus data siswa ini?')) {
+        // Show loading
+        $('#loading-indicator').fadeIn(200);
+        
         $.ajax({
-            url: '/api/v1/students/' + id,
+            url: '/admin/siswa/' + id,
             type: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
                 'Accept': 'application/json'
             },
             success: function(result) {
-                if (result.success) {
-                    // Refresh current page
-                    fetchStudents();
-                    showSuccess('Siswa berhasil dihapus.');
-                } else {
-                    showError('Gagal menghapus data siswa.');
-                }
+                // Refresh current page
+                fetchStudents();
+                
+                // Show success notification
+                showNotification('success', 'Siswa berhasil dihapus!');
             },
             error: function(xhr) {
                 console.error('Error deleting student:', xhr);
-                showError('Gagal menghapus data siswa.');
+                showNotification('error', 'Gagal menghapus data siswa.');
+                $('#loading-indicator').fadeOut(200);
             }
         });
     }
+}
+
+/**
+ * Show notification (better than alert)
+ */
+function showNotification(type, message) {
+    // Create notification element
+    const notification = $(`
+        <div class="alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show notification-toast" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+            <strong>${type === 'success' ? '✓' : '✗'}</strong> ${message}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    `);
+    
+    // Append to body
+    $('body').append(notification);
+    
+    // Auto remove after 3 seconds
+    setTimeout(function() {
+        notification.fadeOut(300, function() {
+            $(this).remove();
+        });
+    }, 3000);
 }
 
 /**
@@ -337,15 +437,14 @@ function escapeHtml(text) {
 }
 
 function showSuccess(message) {
-    // You can use SweetAlert2, Toastr, or native alert
-    alert(message);
+    showNotification('success', message);
 }
 
 function showError(message) {
-    alert(message);
+    showNotification('error', message);
 }
 </script>
-@endpush
+@endsection
 
 @push('css')
 <style>
