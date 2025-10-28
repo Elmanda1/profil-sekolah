@@ -77,33 +77,31 @@
                 <table class="table table-sm table-striped">
                     <thead>
                         <tr>
-                            <th>Nama Prestasi</th>
-                            <th>Tingkat</th>
-                            <th>Peringkat</th>
-                            <th>Tahun</th>
+                            <th>Judul Prestasi</th>
+                            <th>Tanggal</th>
+                            <th>Siswa</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($prestasiRecent as $prestasi)
                             <tr>
-                                <td>{{ Str::limit($prestasi->nama_prestasi, 30) }}</td>
-                                <td><span class="badge bg-info">{{ $prestasi->tingkat }}</span></td>
+                                <td>{{ Str::limit($prestasi->judul, 40) }}</td>
                                 <td>
-                                    @if($prestasi->peringkat == 1)
-                                        <span class="badge bg-warning">🥇 {{ $prestasi->peringkat }}</span>
-                                    @elseif($prestasi->peringkat == 2)
-                                        <span class="badge bg-secondary">🥈 {{ $prestasi->peringkat }}</span>
-                                    @elseif($prestasi->peringkat == 3)
-                                        <span class="badge" style="background-color: #cd7f32; color: white;">🥉 {{ $prestasi->peringkat }}</span>
+                                    <span class="badge bg-info">
+                                        {{ $prestasi->tanggal ? $prestasi->tanggal->format('d/m/Y') : '-' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    @if($prestasi->siswa)
+                                        <small>{{ Str::limit($prestasi->siswa->nama_siswa, 20) }}</small>
                                     @else
-                                        <span class="badge bg-primary">{{ $prestasi->peringkat }}</span>
+                                        <small class="text-muted">-</small>
                                     @endif
                                 </td>
-                                <td>{{ $prestasi->tahun }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="text-center">Tidak ada data prestasi</td>
+                                <td colspan="3" class="text-center">Tidak ada data prestasi</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -124,14 +122,16 @@
                 </div>
             </x-adminlte-card>
 
-            <x-adminlte-card title="Jumlah Guru per Mata Pelajaran" theme="teal" theme-mode="outline" collapsible>
+            <x-adminlte-card title="Jumlah Guru per Sekolah" theme="teal" theme-mode="outline" collapsible>
                 <div style="height: 300px;">
-                    <canvas id="guruPerMapelChart"></canvas>
+                    <canvas id="guruPerSekolahChart"></canvas>
                 </div>
             </x-adminlte-card>
         </div>
     </div>
-@stop @section('js')
+@stop
+
+@section('js')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     function createPieChart(ctx, labels, data, title) {
@@ -198,7 +198,9 @@
     // Data from backend
     const siswaGenderData = @json($siswaGender ?? []);
     const prestasiPerYearData = @json($prestasiPerYear ?? []);
-    const guruPerMapelData = @json($guruPerMapel ?? []);
+    const guruPerSekolahData = @json($guruPerSekolah ?? []);
+
+    console.log('Guru per Sekolah Data:', guruPerSekolahData);
 
     // Create Siswa Gender Chart
     if (Object.keys(siswaGenderData).length > 0) {
@@ -222,14 +224,14 @@
         );
     }
 
-    // Create Guru per Mapel Chart
-    if (Object.keys(guruPerMapelData).length > 0) {
-        const guruPerMapelCtx = document.getElementById('guruPerMapelChart').getContext('2d');
+    // Create Guru per Sekolah Chart
+    if (Object.keys(guruPerSekolahData).length > 0) {
+        const guruPerSekolahCtx = document.getElementById('guruPerSekolahChart').getContext('2d');
         createBarChart(
-            guruPerMapelCtx,
-            Object.keys(guruPerMapelData),
-            Object.values(guruPerMapelData),
-            'Jumlah Guru per Mata Pelajaran'
+            guruPerSekolahCtx,
+            Object.keys(guruPerSekolahData),
+            Object.values(guruPerSekolahData),
+            'Jumlah Guru per Sekolah'
         );
     }
 </script>
