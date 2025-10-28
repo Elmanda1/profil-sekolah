@@ -171,12 +171,30 @@ $(document).ready(function() {
             `;
 
             // Page numbers
-            for (let i = 1; i <= response.last_page; i++) {
+            const pageRange = 2; // Number of pages to show around the current page
+            let startPage = Math.max(1, response.current_page - pageRange);
+            let endPage = Math.min(response.last_page, response.current_page + pageRange);
+
+            if (startPage > 1) {
+                paginationHtml += `<li class="page-item"><a class="page-link" href="#" data-page="1">1</a></li>`;
+                if (startPage > 2) {
+                    paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
                 paginationHtml += `
                     <li class="page-item ${i === response.current_page ? 'active' : ''}">
                         <a class="page-link" href="#" data-page="${i}">${i}</a>
                     </li>
                 `;
+            }
+
+            if (endPage < response.last_page) {
+                if (endPage < response.last_page - 1) {
+                    paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+                paginationHtml += `<li class="page-item"><a class="page-link" href="#" data-page="${response.last_page}">${response.last_page}</a></li>`;
             }
 
             // Next button

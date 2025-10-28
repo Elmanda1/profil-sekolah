@@ -39,13 +39,13 @@ class ArtikelSeeder extends Seeder
 
         $counter = 0;
         foreach ($sekolahList as $sekolah) {
-            for ($i = 0; $i < count($judulArtikel); $i++) {
+            for ($i = 0; $i < 150; $i++) {
                 Artikel::create([
                     'id_sekolah' => $sekolah->id_sekolah,
-                    'judul' => $judulArtikel[$i],
+                    'judul' => $faker->sentence(6),
                     'isi' => $faker->paragraphs(3, true),
-                    'tanggal' => $faker->dateTimeBetween('-3 months', 'now'),
-                    'gambar' => $gambarArtikel[$i],
+                    'tanggal' => $faker->dateTimeBetween('-1 year', 'now'),
+                    'gambar' => $faker->randomElement($gambarArtikel),
                 ]);
                 $counter++;
             }
